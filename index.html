@@ -1,0 +1,3010 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeadPilot — Prototyp</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  body { font-family: 'Inter', system-ui, sans-serif; }
+  .heading { font-family: 'Manrope', sans-serif; letter-spacing: -0.02em; }
+  .gradient-brand { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%); }
+  .gradient-soft { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
+  .glow { box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.1), 0 10px 40px -10px rgba(37, 99, 235, 0.35); }
+  .card-shadow { box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 20px -4px rgba(15, 23, 42, 0.08); }
+  .fade-in { animation: fadeIn 0.3s ease-out; }
+  .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+  .pulse-dot { animation: pulseDot 1.5s ease-in-out infinite; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulseDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.95); } }
+  .hide { display: none !important; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .grid-bg {
+    background-image: linear-gradient(rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(37, 99, 235, 0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  /* Mobile phone frame */
+  .phone-frame {
+    width: 375px;
+    height: 750px;
+    border: 10px solid #0f172a;
+    border-radius: 44px;
+    box-shadow: 0 40px 80px -20px rgba(15, 23, 42, 0.35);
+    overflow: hidden;
+    position: relative;
+    background: white;
+  }
+  .phone-frame::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 26px;
+    background: #0f172a;
+    border-radius: 0 0 16px 16px;
+    z-index: 50;
+  }
+</style>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+          display: ['Manrope', 'sans-serif']
+        },
+        colors: {
+          brand: {
+            50: '#eff6ff',
+            100: '#dbeafe',
+            200: '#bfdbfe',
+            300: '#93c5fd',
+            400: '#60a5fa',
+            500: '#3b82f6',
+            600: '#2563eb',
+            700: '#1d4ed8',
+            800: '#1e40af',
+            900: '#1e3a8a',
+            950: '#172554'
+          }
+        }
+      }
+    }
+  }
+</script>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+<!-- DEMO NAVIGATION BAR (only for prototype, not part of real product) -->
+<div class="sticky top-0 z-50 bg-slate-900 text-white border-b border-slate-800">
+  <div class="max-w-[1400px] mx-auto px-6 py-3 flex items-center gap-6">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded-lg gradient-brand flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <span class="font-bold font-display">LeadPilot</span>
+      <span class="text-[10px] uppercase tracking-wider text-slate-400 px-2 py-0.5 bg-slate-800 rounded">Prototyp</span>
+    </div>
+    <div class="h-4 w-px bg-slate-700"></div>
+    <nav class="flex items-center gap-1 text-sm overflow-x-auto scrollbar-hide">
+      <button onclick="showScreen('welcome')" data-nav="welcome" class="nav-btn px-3 py-1.5 rounded-md hover:bg-slate-800 whitespace-nowrap">1. Welcome</button>
+      <button onclick="showScreen('onboarding')" data-nav="onboarding" class="nav-btn px-3 py-1.5 rounded-md hover:bg-slate-800 whitespace-nowrap">2. Onboarding</button>
+      <button onclick="showScreen('dashboard')" data-nav="dashboard" class="nav-btn px-3 py-1.5 rounded-md hover:bg-slate-800 whitespace-nowrap">3. Dashboard</button>
+      <button onclick="showScreen('leads-list')" data-nav="leads-list" class="nav-btn px-3 py-1.5 rounded-md hover:bg-slate-800 whitespace-nowrap">4. Všechny leady</button>
+      <button onclick="showScreen('lead')" data-nav="lead" class="nav-btn px-3 py-1.5 rounded-md hover:bg-slate-800 whitespace-nowrap">5. Detail leadu</button>
+      <button onclick="showScreen('campaigns')" data-nav="campaigns" class="nav-btn px-3 py-1.5 rounded-md hover:bg-slate-800 whitespace-nowrap">6. Kampaně</button>
+      <button onclick="showScreen('create-campaign')" data-nav="create-campaign" class="nav-btn px-3 py-1.5 rounded-md hover:bg-slate-800 whitespace-nowrap">7. Nová kampaň (AI)</button>
+      <button onclick="showScreen('stats')" data-nav="stats" class="nav-btn px-3 py-1.5 rounded-md hover:bg-slate-800 whitespace-nowrap">8. Statistiky</button>
+      <button onclick="showScreen('landing')" data-nav="landing" class="nav-btn px-3 py-1.5 rounded-md hover:bg-slate-800 whitespace-nowrap">9. Landing page</button>
+      <button onclick="showScreen('cadastre')" data-nav="cadastre" class="nav-btn px-3 py-1.5 rounded-md hover:bg-slate-800 whitespace-nowrap text-amber-300">10. Monitor katastru ⭐</button>
+      <button onclick="showScreen('settings')" data-nav="settings" class="nav-btn px-3 py-1.5 rounded-md hover:bg-slate-800 whitespace-nowrap">11. Nastavení</button>
+      <button onclick="showScreen('mobile')" data-nav="mobile" class="nav-btn px-3 py-1.5 rounded-md hover:bg-slate-800 whitespace-nowrap">12. Mobil</button>
+    </nav>
+    <div class="ml-auto text-xs text-slate-400 hidden md:block">Prototype demo · proklikej si celé UX</div>
+  </div>
+</div>
+
+<!-- =============================================== -->
+<!-- SCREEN: WELCOME / LANDING -->
+<!-- =============================================== -->
+<div id="screen-welcome" class="screen fade-in">
+  <div class="min-h-[calc(100vh-60px)] grid-bg relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-200/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+    <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-300/30 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3"></div>
+
+    <div class="relative max-w-[1200px] mx-auto px-6 py-20">
+      <div class="grid md:grid-cols-2 gap-16 items-center">
+        <div class="slide-up">
+          <div class="inline-flex items-center gap-2 px-3 py-1 bg-white border border-brand-200 rounded-full text-xs font-medium text-brand-700 mb-6">
+            <span class="w-1.5 h-1.5 bg-brand-500 rounded-full pulse-dot"></span>
+            Pre-launch · Pilot 2026
+          </div>
+          <h1 class="heading text-6xl md:text-7xl font-extrabold text-slate-900 leading-none mb-6">
+            Leady, které<br>
+            <span class="text-brand-600">jen zvedáš ze stolu.</span>
+          </h1>
+          <p class="text-xl text-slate-600 mb-8 leading-relaxed">
+            Automatizovaná akvizice nabídek pro makléře, finanční poradce, pojišťováky a výkupové společnosti. AI sama najde majitele zvažující prodej a pošle ti jejich kontakt do mobilu.
+          </p>
+          <div class="flex items-center gap-3 mb-6">
+            <button onclick="showScreen('onboarding')" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 rounded-lg transition shadow-lg shadow-brand-600/25">
+              Začít bezplatný pilot →
+            </button>
+            <button class="border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold px-6 py-3 rounded-lg transition">
+              Jak to funguje
+            </button>
+          </div>
+          <button onclick="showScreen('cadastre')" class="mb-6 inline-flex items-center gap-2 bg-gradient-to-r from-amber-100 to-amber-50 border border-amber-300 hover:border-amber-500 text-amber-900 font-semibold text-sm px-4 py-2 rounded-full transition">
+            ⭐ Premium add-on: Monitor katastru (dědictví, exekuce) →
+          </button>
+          <div class="flex items-center gap-8 text-sm text-slate-500">
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              <span>Žádný setup fee</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              <span>14 dní zdarma</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              <span>Zrušit kdykoli</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero visual -->
+        <div class="relative slide-up" style="animation-delay: 0.1s">
+          <div class="bg-white rounded-2xl card-shadow p-6 glow">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full pulse-dot"></span>
+                <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">Live feed</span>
+              </div>
+              <span class="text-xs text-slate-400">právě teď</span>
+            </div>
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 p-3 bg-brand-50 border border-brand-200 rounded-lg fade-in">
+                <div class="w-10 h-10 bg-brand-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">MN</div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-semibold text-slate-900 text-sm">Marie Nováková</div>
+                  <div class="text-xs text-slate-500">Prodává 3+kk Praha 5 · odhad 8 mil</div>
+                </div>
+                <div class="flex items-center gap-1 text-xs font-medium text-brand-700 bg-brand-100 px-2 py-0.5 rounded">
+                  🔥 9/10
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg">
+                <div class="w-10 h-10 bg-slate-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">PD</div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-semibold text-slate-900 text-sm">Petr Dvořák</div>
+                  <div class="text-xs text-slate-500">Zvažuje prodej pozemku · Beroun</div>
+                </div>
+                <div class="text-xs text-slate-500">7/10</div>
+              </div>
+              <div class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg">
+                <div class="w-10 h-10 bg-slate-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">JK</div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-semibold text-slate-900 text-sm">Jana Kolářová</div>
+                  <div class="text-xs text-slate-500">Prodává RD Černošice · odhad 12 mil</div>
+                </div>
+                <div class="text-xs text-slate-500">8/10</div>
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-3 gap-3 text-center">
+              <div>
+                <div class="text-2xl font-bold text-slate-900">23</div>
+                <div class="text-xs text-slate-500">Leadů dnes</div>
+              </div>
+              <div>
+                <div class="text-2xl font-bold text-brand-600">380 Kč</div>
+                <div class="text-xs text-slate-500">Ø cena/lead</div>
+              </div>
+              <div>
+                <div class="text-2xl font-bold text-emerald-600">12%</div>
+                <div class="text-xs text-slate-500">Konverze</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Floating badges -->
+          <div class="absolute -top-4 -right-4 bg-white rounded-lg card-shadow px-3 py-2 rotate-3">
+            <div class="flex items-center gap-2 text-xs">
+              <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              <span class="font-medium text-slate-700">Meta</span>
+            </div>
+          </div>
+          <div class="absolute top-1/2 -left-6 bg-white rounded-lg card-shadow px-3 py-2 -rotate-3">
+            <div class="flex items-center gap-2 text-xs">
+              <div class="flex gap-0.5">
+                <span class="w-2 h-2 bg-[#4285F4] rounded-sm"></span>
+                <span class="w-2 h-2 bg-[#EA4335] rounded-sm"></span>
+                <span class="w-2 h-2 bg-[#FBBC05] rounded-sm"></span>
+                <span class="w-2 h-2 bg-[#34A853] rounded-sm"></span>
+              </div>
+              <span class="font-medium text-slate-700">Google Ads</span>
+            </div>
+          </div>
+          <div class="absolute -bottom-4 right-8 bg-white rounded-lg card-shadow px-3 py-2 rotate-2">
+            <div class="flex items-center gap-2 text-xs">
+              <span class="w-4 h-4 bg-[#CC0000] rounded-sm flex items-center justify-center text-white font-bold text-[8px]">S</span>
+              <span class="font-medium text-slate-700">Sklik</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vertical pills -->
+      <div class="mt-24 text-center">
+        <div class="text-xs font-medium uppercase tracking-wider text-slate-500 mb-4">Funguje pro všechny profese závislé na leadech</div>
+        <div class="flex flex-wrap justify-center gap-2">
+          <span class="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm text-slate-700">🏠 Realitní makléři</span>
+          <span class="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm text-slate-700">💰 Finanční poradci</span>
+          <span class="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm text-slate-700">🛡️ Pojišťovací zprostředkovatelé</span>
+          <span class="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm text-slate-700">🔑 Výkupové společnosti</span>
+          <span class="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm text-slate-700">☀️ Fotovoltaika a TČ</span>
+          <span class="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm text-slate-700">🚗 Prodej aut</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================== -->
+<!-- SCREEN: ONBOARDING (5 KROKŮ) -->
+<!-- =============================================== -->
+<div id="screen-onboarding" class="screen hide">
+  <div class="min-h-[calc(100vh-60px)] bg-slate-50 py-12">
+    <div class="max-w-2xl mx-auto px-6">
+      <!-- Progress -->
+      <div class="mb-10 slide-up">
+        <div class="flex items-center justify-between text-xs text-slate-500 mb-3">
+          <span>Onboarding · <span id="step-label">Krok 1 ze 5</span></span>
+          <span id="step-time">~ 4 min zbývají</span>
+        </div>
+        <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+          <div id="progress-bar" class="h-full bg-brand-600 transition-all duration-500" style="width: 20%"></div>
+        </div>
+      </div>
+
+      <!-- Step 1: Vertikála -->
+      <div id="onb-step-1" class="onb-step slide-up">
+        <h2 class="heading text-4xl font-extrabold text-slate-900 mb-2">Jakou profesi děláš?</h2>
+        <p class="text-slate-600 mb-8">Přizpůsobíme kampaně, kreativy i kvalifikační otázky přesně tvému oboru.</p>
+        <div class="grid grid-cols-2 gap-3">
+          <button onclick="selectVertical(this, 'real-estate')" class="vertical-btn text-left p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-brand-500 hover:shadow-md transition">
+            <div class="text-3xl mb-2">🏠</div>
+            <div class="font-semibold text-slate-900">Realitní makléř</div>
+            <div class="text-xs text-slate-500 mt-1">Byty, domy, pozemky</div>
+          </button>
+          <button onclick="selectVertical(this, 'finance')" class="vertical-btn text-left p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-brand-500 hover:shadow-md transition">
+            <div class="text-3xl mb-2">💰</div>
+            <div class="font-semibold text-slate-900">Finanční poradce</div>
+            <div class="text-xs text-slate-500 mt-1">Hypotéky, úvěry, investice</div>
+          </button>
+          <button onclick="selectVertical(this, 'insurance')" class="vertical-btn text-left p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-brand-500 hover:shadow-md transition">
+            <div class="text-3xl mb-2">🛡️</div>
+            <div class="font-semibold text-slate-900">Pojišťovací poradce</div>
+            <div class="text-xs text-slate-500 mt-1">Životní, majetkové, auto</div>
+          </button>
+          <button onclick="selectVertical(this, 'buyout')" class="vertical-btn text-left p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-brand-500 hover:shadow-md transition">
+            <div class="text-3xl mb-2">🔑</div>
+            <div class="font-semibold text-slate-900">Výkup nemovitostí</div>
+            <div class="text-xs text-slate-500 mt-1">Rychlý odkup, exekuce</div>
+          </button>
+          <button onclick="selectVertical(this, 'solar')" class="vertical-btn text-left p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-brand-500 hover:shadow-md transition">
+            <div class="text-3xl mb-2">☀️</div>
+            <div class="font-semibold text-slate-900">Fotovoltaika / TČ</div>
+            <div class="text-xs text-slate-500 mt-1">Solár, tepelná čerpadla</div>
+          </button>
+          <button onclick="selectVertical(this, 'auto')" class="vertical-btn text-left p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-brand-500 hover:shadow-md transition">
+            <div class="text-3xl mb-2">🚗</div>
+            <div class="font-semibold text-slate-900">Prodej aut</div>
+            <div class="text-xs text-slate-500 mt-1">Ojetá i nová vozidla</div>
+          </button>
+        </div>
+        <div class="mt-8 flex justify-between">
+          <button onclick="showScreen('welcome')" class="text-slate-500 hover:text-slate-700 font-medium">← Zpět</button>
+          <button onclick="nextStep()" id="btn-step-1" disabled class="bg-slate-300 text-white font-semibold px-6 py-3 rounded-lg cursor-not-allowed">Pokračovat</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Lokality -->
+      <div id="onb-step-2" class="onb-step hide">
+        <h2 class="heading text-4xl font-extrabold text-slate-900 mb-2">Kde působíš?</h2>
+        <p class="text-slate-600 mb-8">Vyber regiony a města, kde chceš sbírat leady. Můžeš přidat víc lokalit.</p>
+        <div class="bg-white border border-slate-200 rounded-xl p-6 mb-6">
+          <div class="flex items-center gap-2 mb-4">
+            <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" placeholder="Hledat město, okres, PSČ..." class="flex-1 outline-none text-sm">
+          </div>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="inline-flex items-center gap-1.5 bg-brand-100 text-brand-800 px-3 py-1.5 rounded-full text-sm font-medium">
+              Praha 5 <button class="hover:text-brand-600">×</button>
+            </span>
+            <span class="inline-flex items-center gap-1.5 bg-brand-100 text-brand-800 px-3 py-1.5 rounded-full text-sm font-medium">
+              Praha 6 <button class="hover:text-brand-600">×</button>
+            </span>
+            <span class="inline-flex items-center gap-1.5 bg-brand-100 text-brand-800 px-3 py-1.5 rounded-full text-sm font-medium">
+              Černošice <button class="hover:text-brand-600">×</button>
+            </span>
+            <span class="inline-flex items-center gap-1.5 bg-brand-100 text-brand-800 px-3 py-1.5 rounded-full text-sm font-medium">
+              Beroun <button class="hover:text-brand-600">×</button>
+            </span>
+          </div>
+          <div class="text-xs text-slate-500">Často přidávané: <button class="text-brand-600 hover:underline">Praha 1</button> · <button class="text-brand-600 hover:underline">Praha 2</button> · <button class="text-brand-600 hover:underline">Kladno</button> · <button class="text-brand-600 hover:underline">Mělník</button></div>
+        </div>
+
+        <!-- Map placeholder -->
+        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden mb-6">
+          <div class="h-48 bg-gradient-to-br from-brand-50 to-brand-100 relative">
+            <svg class="w-full h-full opacity-60" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+              <path d="M50,100 Q100,60 150,80 T250,90 Q300,110 350,100" stroke="#2563eb" stroke-width="2" fill="none" opacity="0.3"/>
+              <circle cx="120" cy="90" r="8" fill="#2563eb"/>
+              <circle cx="120" cy="90" r="16" fill="#2563eb" opacity="0.2"/>
+              <circle cx="180" cy="110" r="6" fill="#2563eb"/>
+              <circle cx="180" cy="110" r="14" fill="#2563eb" opacity="0.2"/>
+              <circle cx="250" cy="85" r="5" fill="#2563eb"/>
+              <circle cx="250" cy="85" r="12" fill="#2563eb" opacity="0.2"/>
+              <circle cx="300" cy="120" r="4" fill="#2563eb"/>
+              <text x="200" y="180" text-anchor="middle" font-size="11" fill="#64748b" font-family="Inter">Střední Čechy + Praha</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="flex justify-between">
+          <button onclick="prevStep()" class="text-slate-500 hover:text-slate-700 font-medium">← Zpět</button>
+          <button onclick="nextStep()" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 rounded-lg transition">Pokračovat</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Cíl -->
+      <div id="onb-step-3" class="onb-step hide">
+        <h2 class="heading text-4xl font-extrabold text-slate-900 mb-2">Kolik leadů chceš měsíčně?</h2>
+        <p class="text-slate-600 mb-8">Podle toho nastavíme reklamní budget napříč kanály.</p>
+
+        <div class="space-y-3 mb-6">
+          <label class="block cursor-pointer">
+            <input type="radio" name="goal" class="peer sr-only">
+            <div class="p-5 bg-white border-2 border-slate-200 rounded-xl peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:border-slate-300 transition">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="font-semibold text-slate-900">10–20 leadů / měsíc</div>
+                  <div class="text-sm text-slate-500 mt-1">Pro začínající makléře nebo testování</div>
+                </div>
+                <div class="text-right">
+                  <div class="font-bold text-slate-900">~ 5 000 Kč</div>
+                  <div class="text-xs text-slate-500">ads budget</div>
+                </div>
+              </div>
+            </div>
+          </label>
+
+          <label class="block cursor-pointer">
+            <input type="radio" name="goal" class="peer sr-only" checked>
+            <div class="p-5 bg-white border-2 border-slate-200 rounded-xl peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:border-slate-300 transition relative">
+              <div class="absolute -top-2.5 right-4 bg-brand-600 text-white text-xs px-2 py-0.5 rounded font-medium">Nejoblíbenější</div>
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="font-semibold text-slate-900">20–40 leadů / měsíc</div>
+                  <div class="text-sm text-slate-500 mt-1">Optimal pro aktivní makléře a poradce</div>
+                </div>
+                <div class="text-right">
+                  <div class="font-bold text-slate-900">~ 10 000 Kč</div>
+                  <div class="text-xs text-slate-500">ads budget</div>
+                </div>
+              </div>
+            </div>
+          </label>
+
+          <label class="block cursor-pointer">
+            <input type="radio" name="goal" class="peer sr-only">
+            <div class="p-5 bg-white border-2 border-slate-200 rounded-xl peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:border-slate-300 transition">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="font-semibold text-slate-900">40+ leadů / měsíc</div>
+                  <div class="text-sm text-slate-500 mt-1">Pro top makléře a týmy</div>
+                </div>
+                <div class="text-right">
+                  <div class="font-bold text-slate-900">20 000+ Kč</div>
+                  <div class="text-xs text-slate-500">ads budget</div>
+                </div>
+              </div>
+            </div>
+          </label>
+        </div>
+
+        <!-- ROI calculator -->
+        <div class="bg-gradient-to-br from-brand-600 to-brand-800 text-white rounded-xl p-6 mb-6">
+          <div class="text-xs uppercase tracking-wider text-brand-200 font-medium mb-3">Odhadovaná návratnost</div>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <div class="text-2xl font-bold">30</div>
+              <div class="text-xs text-brand-200">leadů / měs</div>
+            </div>
+            <div>
+              <div class="text-2xl font-bold">1–2</div>
+              <div class="text-xs text-brand-200">obchody / měs</div>
+            </div>
+            <div>
+              <div class="text-2xl font-bold">~150k</div>
+              <div class="text-xs text-brand-200">Kč provize</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-between">
+          <button onclick="prevStep()" class="text-slate-500 hover:text-slate-700 font-medium">← Zpět</button>
+          <button onclick="nextStep()" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 rounded-lg transition">Pokračovat</button>
+        </div>
+      </div>
+
+      <!-- Step 4: Napojení reklam -->
+      <div id="onb-step-4" class="onb-step hide">
+        <h2 class="heading text-4xl font-extrabold text-slate-900 mb-2">Napoj si reklamní kanály</h2>
+        <p class="text-slate-600 mb-8">Platíš ads <strong>přímo ze své karty</strong> Metě/Googlu/Seznamu. My jen tvoříme a optimalizujeme kampaně.</p>
+
+        <div class="space-y-3 mb-6">
+          <button onclick="connectChannel(this)" class="channel-btn w-full flex items-center gap-4 p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-brand-500 transition">
+            <div class="w-12 h-12 bg-[#1877F2] rounded-xl flex items-center justify-center">
+              <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </div>
+            <div class="flex-1 text-left">
+              <div class="font-semibold text-slate-900">Meta (Facebook + Instagram)</div>
+              <div class="text-xs text-slate-500 mt-0.5">Nejefektivnější pro hledání nemovitostí, hypoték, pojištění</div>
+            </div>
+            <div class="channel-state text-sm font-medium text-brand-600">Připojit →</div>
+          </button>
+
+          <button onclick="connectChannel(this)" class="channel-btn w-full flex items-center gap-4 p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-brand-500 transition">
+            <div class="w-12 h-12 bg-white border border-slate-200 rounded-xl flex items-center justify-center">
+              <svg class="w-7 h-7" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            </div>
+            <div class="flex-1 text-left">
+              <div class="font-semibold text-slate-900">Google Ads</div>
+              <div class="text-xs text-slate-500 mt-0.5">Search + Display + Performance Max, cílení na intent</div>
+            </div>
+            <div class="channel-state text-sm font-medium text-brand-600">Připojit →</div>
+          </button>
+
+          <button onclick="connectChannel(this)" class="channel-btn w-full flex items-center gap-4 p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-brand-500 transition">
+            <div class="w-12 h-12 bg-[#CC0000] rounded-xl flex items-center justify-center">
+              <span class="text-white font-bold text-xl">S</span>
+            </div>
+            <div class="flex-1 text-left">
+              <div class="font-semibold text-slate-900">Sklik (Seznam) <span class="ml-1 text-[10px] uppercase tracking-wider bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">CZ exclusive</span></div>
+              <div class="text-xs text-slate-500 mt-0.5">30 % českého search trhu, cenově výhodný</div>
+            </div>
+            <div class="channel-state text-sm font-medium text-brand-600">Připojit →</div>
+          </button>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+          <div class="flex gap-3">
+            <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="text-sm text-amber-900">
+              <strong>Nemáš některý z účtů?</strong> Bez problému — pomůžeme ti ho založit za 5 minut. Začínat můžeš jen s jedním kanálem, další přidáš kdykoli.
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-between">
+          <button onclick="prevStep()" class="text-slate-500 hover:text-slate-700 font-medium">← Zpět</button>
+          <button onclick="nextStep()" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 rounded-lg transition">Pokračovat</button>
+        </div>
+      </div>
+
+      <!-- Step 5: Billing -->
+      <div id="onb-step-5" class="onb-step hide">
+        <h2 class="heading text-4xl font-extrabold text-slate-900 mb-2">Poslední krok: platba</h2>
+        <p class="text-slate-600 mb-8">14 dní zdarma. Zrušit kdykoli. Žádný setup fee.</p>
+
+        <div class="bg-white border border-slate-200 rounded-xl p-6 mb-4 card-shadow">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <div class="inline-block bg-brand-100 text-brand-700 text-xs font-semibold px-2 py-0.5 rounded mb-2">VYBRANÝ TIER</div>
+              <h3 class="heading text-2xl font-bold text-slate-900">LeadPilot Pro</h3>
+              <div class="text-sm text-slate-500 mt-1">Do 30 leadů / 3 lokality / všechny kanály</div>
+            </div>
+            <div class="text-right">
+              <div class="text-3xl font-bold text-slate-900">2 990 Kč</div>
+              <div class="text-xs text-slate-500">/ měsíc, bez DPH</div>
+            </div>
+          </div>
+          <div class="border-t border-slate-100 pt-4 space-y-2 text-sm text-slate-700">
+            <div class="flex items-center gap-2"><svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>Meta + Google + Sklik kampaně</div>
+            <div class="flex items-center gap-2"><svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>AI kvalifikace a skórování leadů</div>
+            <div class="flex items-center gap-2"><svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>Okamžité push notifikace</div>
+            <div class="flex items-center gap-2"><svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>Mini CRM pro leady</div>
+            <div class="flex items-center gap-2"><svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>Nonstop support česky</div>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-xl p-6 mb-6">
+          <div class="text-xs uppercase tracking-wider text-slate-500 font-medium mb-4">Platební karta</div>
+          <div class="space-y-3">
+            <input type="text" placeholder="1234 5678 9012 3456" class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-brand-500 transition text-sm font-mono">
+            <div class="grid grid-cols-2 gap-3">
+              <input type="text" placeholder="MM / RR" class="px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-brand-500 transition text-sm font-mono">
+              <input type="text" placeholder="CVC" class="px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-brand-500 transition text-sm font-mono">
+            </div>
+          </div>
+          <div class="flex items-center gap-2 mt-4 text-xs text-slate-500">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            Šifrováno a zpracováváno přes Stripe · PCI DSS Level 1
+          </div>
+        </div>
+
+        <div class="flex justify-between">
+          <button onclick="prevStep()" class="text-slate-500 hover:text-slate-700 font-medium">← Zpět</button>
+          <button onclick="finishOnboarding()" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-8 py-3 rounded-lg transition shadow-lg shadow-brand-600/25">Začít pilot →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================== -->
+<!-- SCREEN: DASHBOARD -->
+<!-- =============================================== -->
+<div id="screen-dashboard" class="screen hide">
+  <div class="min-h-[calc(100vh-60px)] bg-slate-50">
+    <div class="max-w-[1400px] mx-auto flex">
+
+      <!-- Sidebar -->
+      <aside class="w-60 bg-white border-r border-slate-200 min-h-[calc(100vh-60px)] sticky top-[60px] hidden md:block">
+        <div class="p-6">
+          <div class="flex items-center gap-2 mb-8">
+            <div class="w-8 h-8 rounded-lg gradient-brand flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <span class="font-bold font-display text-lg">LeadPilot</span>
+          </div>
+          <nav class="space-y-1">
+            <a class="flex items-center gap-3 px-3 py-2 text-brand-700 bg-brand-50 rounded-lg font-medium text-sm">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+              Dashboard
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm cursor-pointer">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              Leady <span class="ml-auto text-xs bg-brand-100 text-brand-700 px-1.5 rounded">3</span>
+            </a>
+            <a onclick="showScreen('campaigns')" class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm cursor-pointer">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+              Kampaně
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm cursor-pointer">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              Statistiky
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm cursor-pointer">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              Nastavení
+            </a>
+          </nav>
+
+          <!-- AI asistent -->
+          <div class="mt-8 bg-gradient-to-br from-brand-50 to-brand-100 border border-brand-200 rounded-xl p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="w-6 h-6 bg-brand-600 rounded-md flex items-center justify-center">
+                <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 4.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM12 18a6 6 0 01-5.4-3.5h10.8A6 6 0 0112 18z"/></svg>
+              </div>
+              <span class="text-xs font-semibold text-brand-900">AI asistent</span>
+            </div>
+            <p class="text-xs text-brand-900 leading-relaxed">Tvoje Sklik kampaň má 2× lepší CPL než Meta. Přesunul jsem 30 % budgetu.</p>
+          </div>
+
+          <!-- Premium katastr widget -->
+          <button onclick="showScreen('cadastre')" class="mt-4 w-full text-left bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl p-4 text-white hover:shadow-lg transition">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-base">⭐</span>
+              <span class="text-xs font-bold uppercase tracking-wider">Monitor katastru</span>
+            </div>
+            <div class="text-xs text-amber-50 leading-relaxed mb-2">Dnes detekováno <strong class="text-white">12 dědictví</strong> v Praze 5+6. Pošleš dopisy?</div>
+            <div class="text-[10px] text-amber-100 font-medium">Otevřít →</div>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <main class="flex-1 p-6 md:p-10">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h1 class="heading text-3xl font-extrabold text-slate-900">Dobré ráno, Jaroslave 👋</h1>
+            <p class="text-slate-500 mt-1">Dnes je čtvrtek. Máš 3 nové leady.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button class="relative p-2 text-slate-500 hover:bg-slate-100 rounded-lg">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+              <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            <div class="w-9 h-9 rounded-full bg-brand-600 flex items-center justify-center text-white font-semibold">JŠ</div>
+          </div>
+        </div>
+
+        <!-- Metrics -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div class="bg-white border border-slate-200 rounded-xl p-5 card-shadow">
+            <div class="flex items-center gap-2 text-xs text-slate-500 mb-2">
+              <span class="w-2 h-2 bg-brand-500 rounded-full"></span>
+              Leadů tento měsíc
+            </div>
+            <div class="flex items-baseline gap-2">
+              <div class="heading text-3xl font-extrabold text-slate-900">23</div>
+              <div class="text-xs font-medium text-emerald-600 flex items-center">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M5 10l5-5 5 5H5z"/></svg>
+                37 %
+              </div>
+            </div>
+            <div class="text-xs text-slate-400 mt-2">Cíl: 30 / měs</div>
+            <div class="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-brand-500" style="width: 77%"></div>
+            </div>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-xl p-5 card-shadow">
+            <div class="flex items-center gap-2 text-xs text-slate-500 mb-2">
+              <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+              Ø cena/lead
+            </div>
+            <div class="flex items-baseline gap-2">
+              <div class="heading text-3xl font-extrabold text-slate-900">380 Kč</div>
+              <div class="text-xs font-medium text-emerald-600 flex items-center">
+                <svg class="w-3 h-3 rotate-180" fill="currentColor" viewBox="0 0 20 20"><path d="M5 10l5-5 5 5H5z"/></svg>
+                12 %
+              </div>
+            </div>
+            <div class="text-xs text-slate-400 mt-2">vs. 430 Kč minulý měsíc</div>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-xl p-5 card-shadow">
+            <div class="flex items-center gap-2 text-xs text-slate-500 mb-2">
+              <span class="w-2 h-2 bg-amber-500 rounded-full"></span>
+              Budget zbývá
+            </div>
+            <div class="flex items-baseline gap-2">
+              <div class="heading text-3xl font-extrabold text-slate-900">4 200</div>
+              <div class="text-xs text-slate-500">/ 10 000 Kč</div>
+            </div>
+            <div class="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-amber-500" style="width: 42%"></div>
+            </div>
+            <div class="text-xs text-slate-400 mt-1">Doběhne ~ 24. 4.</div>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-xl p-5 card-shadow">
+            <div class="flex items-center gap-2 text-xs text-slate-500 mb-2">
+              <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
+              Konverze na klienta
+            </div>
+            <div class="flex items-baseline gap-2">
+              <div class="heading text-3xl font-extrabold text-slate-900">12 %</div>
+              <div class="text-xs font-medium text-emerald-600 flex items-center">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M5 10l5-5 5 5H5z"/></svg>
+                3 %
+              </div>
+            </div>
+            <div class="text-xs text-slate-400 mt-2">Industry průměr: 5 %</div>
+          </div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-6">
+          <!-- Leady -->
+          <div class="lg:col-span-2 bg-white border border-slate-200 rounded-xl card-shadow">
+            <div class="flex items-center justify-between p-5 border-b border-slate-100">
+              <div>
+                <h2 class="heading font-bold text-lg text-slate-900">Nové leady</h2>
+                <p class="text-xs text-slate-500">Čekají na kontakt</p>
+              </div>
+              <button class="text-sm text-brand-600 font-medium hover:text-brand-700">Všechny →</button>
+            </div>
+            <div class="divide-y divide-slate-100">
+
+              <div onclick="showScreen('lead')" class="flex items-center gap-4 p-5 hover:bg-slate-50 cursor-pointer transition">
+                <div class="w-11 h-11 rounded-full bg-brand-600 flex items-center justify-center text-white font-semibold">MN</div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="font-semibold text-slate-900">Marie Nováková</span>
+                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">🔥 HOT</span>
+                  </div>
+                  <div class="text-sm text-slate-500 mt-0.5">Prodává 3+kk Praha 5 Smíchov · 87 m² · odhad 8 mil · do 3 měsíců</div>
+                  <div class="flex items-center gap-3 mt-1 text-xs text-slate-400">
+                    <span class="flex items-center gap-1">
+                      <svg class="w-3 h-3" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                      Meta
+                    </span>
+                    <span>·</span>
+                    <span>před 5 min</span>
+                    <span>·</span>
+                    <span class="font-medium text-slate-600">AI: 9/10</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button onclick="event.stopPropagation()" class="w-9 h-9 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center text-white transition">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <div onclick="showScreen('lead')" class="flex items-center gap-4 p-5 hover:bg-slate-50 cursor-pointer transition">
+                <div class="w-11 h-11 rounded-full bg-slate-600 flex items-center justify-center text-white font-semibold">PD</div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="font-semibold text-slate-900">Petr Dvořák</span>
+                  </div>
+                  <div class="text-sm text-slate-500 mt-0.5">Zvažuje prodej pozemku Beroun · 1 200 m² · odhad 3 mil · sleduje trh</div>
+                  <div class="flex items-center gap-3 mt-1 text-xs text-slate-400">
+                    <span class="flex items-center gap-1">
+                      <div class="flex gap-0.5">
+                        <span class="w-1.5 h-1.5 bg-[#4285F4] rounded-sm"></span>
+                        <span class="w-1.5 h-1.5 bg-[#EA4335] rounded-sm"></span>
+                        <span class="w-1.5 h-1.5 bg-[#FBBC05] rounded-sm"></span>
+                        <span class="w-1.5 h-1.5 bg-[#34A853] rounded-sm"></span>
+                      </div>
+                      Google
+                    </span>
+                    <span>·</span>
+                    <span>před 2 h</span>
+                    <span>·</span>
+                    <span class="font-medium text-slate-600">AI: 7/10</span>
+                  </div>
+                </div>
+                <button onclick="event.stopPropagation()" class="w-9 h-9 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 transition">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>
+                </button>
+              </div>
+
+              <div onclick="showScreen('lead')" class="flex items-center gap-4 p-5 hover:bg-slate-50 cursor-pointer transition">
+                <div class="w-11 h-11 rounded-full bg-slate-600 flex items-center justify-center text-white font-semibold">JK</div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="font-semibold text-slate-900">Jana Kolářová</span>
+                  </div>
+                  <div class="text-sm text-slate-500 mt-0.5">Prodává RD Černošice · 180 m² + zahrada · odhad 12 mil · rozvod, rychlý prodej</div>
+                  <div class="flex items-center gap-3 mt-1 text-xs text-slate-400">
+                    <span class="flex items-center gap-1">
+                      <span class="w-3 h-3 bg-[#CC0000] rounded-sm inline-flex items-center justify-center text-white font-bold text-[7px]">S</span>
+                      Sklik
+                    </span>
+                    <span>·</span>
+                    <span>dnes ráno</span>
+                    <span>·</span>
+                    <span class="font-medium text-slate-600">AI: 8/10</span>
+                  </div>
+                </div>
+                <button onclick="event.stopPropagation()" class="w-9 h-9 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 transition">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Channel mix -->
+          <div class="bg-white border border-slate-200 rounded-xl card-shadow">
+            <div class="p-5 border-b border-slate-100">
+              <h2 class="heading font-bold text-lg text-slate-900">Mix kanálů</h2>
+              <p class="text-xs text-slate-500">Tento týden · per lead</p>
+            </div>
+            <div class="p-5 space-y-5">
+              <div>
+                <div class="flex items-center justify-between text-sm mb-2">
+                  <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    <span class="font-medium text-slate-900">Meta</span>
+                  </span>
+                  <span class="text-slate-900 font-semibold">450 Kč</span>
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-[#1877F2]" style="width: 100%"></div>
+                </div>
+                <div class="text-xs text-slate-500 mt-1">11 leadů · vyšší CPL</div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between text-sm mb-2">
+                  <span class="flex items-center gap-2">
+                    <div class="flex gap-0.5">
+                      <span class="w-2 h-2 bg-[#4285F4] rounded-sm"></span>
+                      <span class="w-2 h-2 bg-[#EA4335] rounded-sm"></span>
+                      <span class="w-2 h-2 bg-[#FBBC05] rounded-sm"></span>
+                      <span class="w-2 h-2 bg-[#34A853] rounded-sm"></span>
+                    </div>
+                    <span class="font-medium text-slate-900">Google</span>
+                  </span>
+                  <span class="text-slate-900 font-semibold">380 Kč</span>
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-[#4285F4] via-[#FBBC05] to-[#34A853]" style="width: 84%"></div>
+                </div>
+                <div class="text-xs text-slate-500 mt-1">7 leadů · průměr</div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between text-sm mb-2">
+                  <span class="flex items-center gap-2">
+                    <span class="w-4 h-4 bg-[#CC0000] rounded inline-flex items-center justify-center text-white font-bold text-[9px]">S</span>
+                    <span class="font-medium text-slate-900">Sklik</span>
+                    <span class="text-[10px] bg-emerald-100 text-emerald-700 px-1 py-0.5 rounded font-semibold">TOP</span>
+                  </span>
+                  <span class="text-slate-900 font-semibold">240 Kč</span>
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-[#CC0000]" style="width: 53%"></div>
+                </div>
+                <div class="text-xs text-slate-500 mt-1">5 leadů · nejlevnější</div>
+              </div>
+            </div>
+            <div class="p-5 border-t border-slate-100 bg-slate-50 rounded-b-xl">
+              <div class="flex items-start gap-2 text-xs text-slate-700">
+                <svg class="w-4 h-4 text-brand-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <div>
+                  <strong class="text-slate-900">AI doporučení:</strong> přesunout 30 % budgetu z Mety na Sklik → úspora ~ 1 200 Kč/měs.
+                  <button class="text-brand-600 font-medium hover:underline ml-1">Aplikovat</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================== -->
+<!-- SCREEN: LEAD DETAIL -->
+<!-- =============================================== -->
+<div id="screen-lead" class="screen hide">
+  <div class="min-h-[calc(100vh-60px)] bg-slate-50">
+    <div class="max-w-4xl mx-auto p-6 md:p-10">
+      <button onclick="showScreen('dashboard')" class="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 mb-6 font-medium">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Zpět na dashboard
+      </button>
+
+      <!-- Header -->
+      <div class="bg-white border border-slate-200 rounded-2xl card-shadow overflow-hidden mb-6">
+        <div class="gradient-brand h-24 relative">
+          <div class="absolute bottom-0 left-8 transform translate-y-1/2 w-20 h-20 rounded-full bg-white p-1">
+            <div class="w-full h-full rounded-full bg-brand-600 flex items-center justify-center text-white text-2xl font-bold">MN</div>
+          </div>
+          <div class="absolute top-4 right-4 flex gap-2">
+            <span class="inline-flex items-center gap-1 text-xs font-semibold text-white bg-red-500/90 backdrop-blur px-2.5 py-1 rounded-full">
+              🔥 HOT
+            </span>
+          </div>
+        </div>
+        <div class="pt-14 pb-6 px-8">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="heading text-3xl font-extrabold text-slate-900">Marie Nováková</h1>
+              <div class="flex items-center gap-4 text-sm text-slate-500 mt-1">
+                <span>Prodává 3+kk Praha 5 Smíchov · majitel od 2019</span>
+                <span>·</span>
+                <span class="flex items-center gap-1">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  Meta Lead Ads
+                </span>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs text-slate-500">Přišel před</div>
+              <div class="font-semibold text-slate-900">5 minutami</div>
+            </div>
+          </div>
+
+          <!-- Quick actions -->
+          <div class="flex flex-wrap gap-2 mt-6">
+            <button class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-5 py-3 rounded-lg transition shadow-lg shadow-emerald-500/20">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>
+              Zavolat: +420 602 123 456
+            </button>
+            <button class="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold px-4 py-3 rounded-lg transition">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+              SMS šablona
+            </button>
+            <button class="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold px-4 py-3 rounded-lg transition">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              Email
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Main column -->
+        <div class="md:col-span-2 space-y-6">
+
+          <!-- AI kvalifikace -->
+          <div class="bg-gradient-to-br from-brand-600 to-brand-800 text-white rounded-2xl p-6 card-shadow">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-8 h-8 bg-white/20 backdrop-blur rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 4.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM12 18a6 6 0 01-5.4-3.5h10.8A6 6 0 0112 18z"/></svg>
+              </div>
+              <span class="text-xs font-semibold uppercase tracking-wider text-brand-200">AI kvalifikace</span>
+              <div class="ml-auto flex items-center gap-1">
+                <span class="heading text-2xl font-extrabold">9</span>
+                <span class="text-brand-200">/10</span>
+              </div>
+            </div>
+            <p class="text-brand-50 leading-relaxed mb-4">
+              <strong class="text-white">Velmi silný lead.</strong> Marie vlastní 3+kk na Praze 5 Smíchov (87 m²) a chce prodat do 3 měsíců kvůli stěhování za prací do Brna. V bytě po rekonstrukci (2023), bez zástavy. Její cenové očekávání (8 mil) je v souladu s AI odhadem tržní ceny (7,8–8,4 mil). Realistický prodávající, ne jen průzkumník trhu.
+            </p>
+            <p class="text-sm text-brand-200 italic">
+              💡 Doporučuji zavolat do 15 minut a nabídnout osobní prohlídku k odhadu. Podobné leady z této kampaně mají 42% konverzi na podpis zprostředkovatelské smlouvy.
+            </p>
+          </div>
+
+          <!-- Z formuláře -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-6 card-shadow">
+            <h3 class="heading font-bold text-lg text-slate-900 mb-4">Odpovědi z formuláře</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <div class="text-xs text-slate-500 mb-1">Typ nemovitosti</div>
+                <div class="font-semibold text-slate-900">Byt 3+kk</div>
+              </div>
+              <div>
+                <div class="text-xs text-slate-500 mb-1">Adresa</div>
+                <div class="font-semibold text-slate-900">Praha 5 Smíchov</div>
+              </div>
+              <div>
+                <div class="text-xs text-slate-500 mb-1">Výměra</div>
+                <div class="font-semibold text-slate-900">87 m² + balkon 6 m²</div>
+              </div>
+              <div>
+                <div class="text-xs text-slate-500 mb-1">Cenové očekávání</div>
+                <div class="font-semibold text-slate-900">8 000 000 Kč</div>
+              </div>
+              <div>
+                <div class="text-xs text-slate-500 mb-1">Stav nemovitosti</div>
+                <div class="font-semibold text-slate-900">Po rekonstrukci (2023)</div>
+              </div>
+              <div>
+                <div class="text-xs text-slate-500 mb-1">Chce prodat</div>
+                <div class="font-semibold text-slate-900">Do 3 měsíců</div>
+              </div>
+              <div>
+                <div class="text-xs text-slate-500 mb-1">Důvod prodeje</div>
+                <div class="font-semibold text-slate-900">Stěhování za prací (Brno)</div>
+              </div>
+              <div>
+                <div class="text-xs text-slate-500 mb-1">Zástava / hypotéka</div>
+                <div class="font-semibold text-emerald-700">Bez zástavy ✓</div>
+              </div>
+            </div>
+            <div class="mt-5 pt-5 border-t border-slate-100">
+              <div class="text-xs text-slate-500 mb-2">AI odhad tržní ceny (srovnání s okolím)</div>
+              <div class="flex items-center gap-4">
+                <div>
+                  <div class="heading text-2xl font-extrabold text-slate-900">7,8 – 8,4 mil</div>
+                  <div class="text-xs text-slate-500 mt-0.5">na základě 12 srovnatelných prodejů</div>
+                </div>
+                <div class="ml-auto px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg">
+                  <div class="text-xs text-emerald-700 font-semibold">Očekávání v souladu s trhem ✓</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Timeline -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-6 card-shadow">
+            <h3 class="heading font-bold text-lg text-slate-900 mb-4">Historie</h3>
+            <div class="relative pl-6 space-y-4">
+              <div class="absolute left-2 top-2 bottom-2 w-px bg-slate-200"></div>
+
+              <div class="relative">
+                <div class="absolute -left-6 top-1.5 w-3 h-3 rounded-full bg-brand-500 ring-4 ring-brand-100"></div>
+                <div class="text-xs text-slate-500">před 5 min</div>
+                <div class="text-sm text-slate-900">Marie vyplnila formulář "Kolik stojí tvůj byt?" na FB</div>
+              </div>
+
+              <div class="relative">
+                <div class="absolute -left-6 top-1.5 w-3 h-3 rounded-full bg-slate-300 ring-4 ring-slate-100"></div>
+                <div class="text-xs text-slate-500">před 4 min</div>
+                <div class="text-sm text-slate-900">AI srovnala s 12 prodanými nemovitostmi v okolí · odhad 7,8–8,4 mil</div>
+              </div>
+
+              <div class="relative">
+                <div class="absolute -left-6 top-1.5 w-3 h-3 rounded-full bg-slate-300 ring-4 ring-slate-100"></div>
+                <div class="text-xs text-slate-500">před 4 min</div>
+                <div class="text-sm text-slate-900">AI skóre 9/10 · Push notifikace odeslána makléři</div>
+              </div>
+
+              <div class="relative">
+                <div class="absolute -left-6 top-1.5 w-3 h-3 rounded-full bg-slate-300 ring-4 ring-slate-100"></div>
+                <div class="text-xs text-slate-500">před 3 min</div>
+                <div class="text-sm text-slate-500 italic">Automatická SMS: "Dobrý den Marie, děkuji za zájem o odhad. Ozvu se do 15 minut s předběžným číslem. Jaroslav Šimek, JSP Reality"</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right column -->
+        <div class="space-y-6">
+
+          <!-- Stav -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-6 card-shadow">
+            <h3 class="heading font-bold text-lg text-slate-900 mb-4">Stav leadu</h3>
+            <div class="space-y-2">
+              <button class="stage-btn w-full flex items-center gap-3 p-3 bg-brand-50 border border-brand-200 rounded-lg text-left">
+                <div class="w-5 h-5 rounded-full bg-brand-600 flex items-center justify-center">
+                  <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <span class="text-sm font-semibold text-brand-900">Nový lead</span>
+              </button>
+              <button onclick="advanceStage(this)" class="stage-btn w-full flex items-center gap-3 p-3 hover:bg-slate-50 rounded-lg text-left">
+                <div class="w-5 h-5 rounded-full border-2 border-slate-300"></div>
+                <span class="text-sm text-slate-600">Kontaktován</span>
+              </button>
+              <button onclick="advanceStage(this)" class="stage-btn w-full flex items-center gap-3 p-3 hover:bg-slate-50 rounded-lg text-left">
+                <div class="w-5 h-5 rounded-full border-2 border-slate-300"></div>
+                <span class="text-sm text-slate-600">Odhad / prohlídka</span>
+              </button>
+              <button onclick="advanceStage(this)" class="stage-btn w-full flex items-center gap-3 p-3 hover:bg-slate-50 rounded-lg text-left">
+                <div class="w-5 h-5 rounded-full border-2 border-slate-300"></div>
+                <span class="text-sm text-slate-600">Zprostředkovatelská smlouva</span>
+              </button>
+              <button onclick="advanceStage(this)" class="stage-btn w-full flex items-center gap-3 p-3 hover:bg-slate-50 rounded-lg text-left">
+                <div class="w-5 h-5 rounded-full border-2 border-slate-300"></div>
+                <span class="text-sm text-slate-600">Inzerát / prezentace</span>
+              </button>
+              <button onclick="advanceStage(this)" class="stage-btn w-full flex items-center gap-3 p-3 hover:bg-slate-50 rounded-lg text-left">
+                <div class="w-5 h-5 rounded-full border-2 border-slate-300"></div>
+                <span class="text-sm text-slate-600">Rezervace kupujícím</span>
+              </button>
+              <button onclick="advanceStage(this)" class="stage-btn w-full flex items-center gap-3 p-3 hover:bg-slate-50 rounded-lg text-left">
+                <div class="w-5 h-5 rounded-full border-2 border-slate-300"></div>
+                <span class="text-sm text-slate-600">Prodáno ✓</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Atribuce -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-6 card-shadow">
+            <h3 class="heading font-bold text-lg text-slate-900 mb-4">Zdroj</h3>
+            <div class="space-y-3 text-sm">
+              <div class="flex justify-between">
+                <span class="text-slate-500">Kanál</span>
+                <span class="font-semibold text-slate-900">Meta (FB)</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">Kampaň</span>
+                <span class="font-semibold text-slate-900">Odhad ceny · Praha 5</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">Kreativa</span>
+                <span class="font-semibold text-slate-900">Var. B (AI)</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">Cena leadu</span>
+                <span class="font-semibold text-brand-600">420 Kč</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Očekávaná provize -->
+          <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white rounded-2xl p-6 card-shadow">
+            <div class="text-xs uppercase tracking-wider text-emerald-100 font-medium mb-2">Očekávaná provize</div>
+            <div class="heading text-3xl font-extrabold">~ 240 000 Kč</div>
+            <div class="text-xs text-emerald-100 mt-1">3 % z prodejní ceny 8 mil</div>
+            <div class="mt-3 pt-3 border-t border-white/20 text-xs text-emerald-100">
+              ROI vs. cena leadu: <strong class="text-white">570×</strong>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================== -->
+<!-- SCREEN: KAMPANĚ -->
+<!-- =============================================== -->
+<div id="screen-campaigns" class="screen hide">
+  <div class="min-h-[calc(100vh-60px)] bg-slate-50 p-6 md:p-10">
+    <div class="max-w-[1400px] mx-auto">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="heading text-3xl font-extrabold text-slate-900">Kampaně</h1>
+          <p class="text-slate-500 mt-1">3 aktivní kampaně napříč 3 kanály · spravuje AI</p>
+        </div>
+        <button class="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold px-5 py-2.5 rounded-lg transition shadow-lg shadow-brand-600/20">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          Nová kampaň
+        </button>
+      </div>
+
+      <!-- AI summary -->
+      <div class="bg-gradient-to-r from-brand-900 via-brand-700 to-brand-600 rounded-2xl p-6 text-white mb-8 card-shadow">
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 4.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM12 18a6 6 0 01-5.4-3.5h10.8A6 6 0 0112 18z"/></svg>
+          </div>
+          <div class="flex-1">
+            <div class="text-xs font-semibold uppercase tracking-wider text-brand-200 mb-1">AI optimalizace za posledních 7 dní</div>
+            <div class="text-lg font-semibold mb-2">Ušetřeno 2 340 Kč ads budgetu · CPL snížen o 27 %</div>
+            <div class="text-sm text-brand-100">
+              Přesunul jsem budget z Mety (slabší kreativa) na Sklik. Vygeneroval jsem 5 nových inzerátových variant přes AI, nejlepší mají 2× vyšší CTR. Spustil jsem A/B test na landing page.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Campaign cards -->
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+        <div class="bg-white border border-slate-200 rounded-2xl card-shadow overflow-hidden">
+          <div class="aspect-[4/3] bg-gradient-to-br from-brand-400 to-brand-700 relative overflow-hidden">
+            <div class="absolute inset-0 p-6 flex flex-col justify-end text-white">
+              <div class="text-[10px] uppercase tracking-wider opacity-80">Meta Ads · Lead Ads</div>
+              <div class="heading text-xl font-extrabold mt-1">Odhad ceny · byty Praha 5</div>
+              <div class="text-sm opacity-90">Majitelé 2+kk · 3+kk · 4+kk</div>
+            </div>
+            <div class="absolute top-4 right-4 flex items-center gap-1.5 bg-white/20 backdrop-blur px-2 py-1 rounded text-xs font-semibold">
+              <span class="w-2 h-2 bg-emerald-400 rounded-full pulse-dot"></span>
+              Běží
+            </div>
+          </div>
+          <div class="p-5">
+            <div class="grid grid-cols-3 gap-3 mb-4">
+              <div>
+                <div class="text-xs text-slate-500">Leady</div>
+                <div class="heading text-xl font-bold text-slate-900">11</div>
+              </div>
+              <div>
+                <div class="text-xs text-slate-500">CPL</div>
+                <div class="heading text-xl font-bold text-slate-900">450 Kč</div>
+              </div>
+              <div>
+                <div class="text-xs text-slate-500">Utraceno</div>
+                <div class="heading text-xl font-bold text-slate-900">4 950</div>
+              </div>
+            </div>
+            <div class="h-1.5 bg-slate-100 rounded-full mb-3">
+              <div class="h-full bg-brand-500 rounded-full" style="width: 66%"></div>
+            </div>
+            <div class="text-xs text-slate-500">4 950 / 7 500 Kč budget</div>
+            <div class="flex items-center gap-2 mt-4">
+              <button class="flex-1 text-sm bg-slate-100 hover:bg-slate-200 font-medium py-2 rounded-lg transition">Upravit</button>
+              <button class="flex-1 text-sm bg-slate-100 hover:bg-slate-200 font-medium py-2 rounded-lg transition">Pauza</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl card-shadow overflow-hidden">
+          <div class="aspect-[4/3] bg-gradient-to-br from-slate-600 to-slate-900 relative overflow-hidden">
+            <div class="absolute inset-0 p-6 flex flex-col justify-end text-white">
+              <div class="text-[10px] uppercase tracking-wider opacity-80">Google Ads · Performance Max</div>
+              <div class="heading text-xl font-extrabold mt-1">Prodej pozemku · Beroun</div>
+              <div class="text-sm opacity-90">Majitelé stavebních pozemků</div>
+            </div>
+            <div class="absolute top-4 right-4 flex items-center gap-1.5 bg-white/20 backdrop-blur px-2 py-1 rounded text-xs font-semibold">
+              <span class="w-2 h-2 bg-emerald-400 rounded-full pulse-dot"></span>
+              Běží
+            </div>
+          </div>
+          <div class="p-5">
+            <div class="grid grid-cols-3 gap-3 mb-4">
+              <div>
+                <div class="text-xs text-slate-500">Leady</div>
+                <div class="heading text-xl font-bold text-slate-900">7</div>
+              </div>
+              <div>
+                <div class="text-xs text-slate-500">CPL</div>
+                <div class="heading text-xl font-bold text-slate-900">380 Kč</div>
+              </div>
+              <div>
+                <div class="text-xs text-slate-500">Utraceno</div>
+                <div class="heading text-xl font-bold text-slate-900">2 660</div>
+              </div>
+            </div>
+            <div class="h-1.5 bg-slate-100 rounded-full mb-3">
+              <div class="h-full bg-slate-700 rounded-full" style="width: 53%"></div>
+            </div>
+            <div class="text-xs text-slate-500">2 660 / 5 000 Kč budget</div>
+            <div class="flex items-center gap-2 mt-4">
+              <button class="flex-1 text-sm bg-slate-100 hover:bg-slate-200 font-medium py-2 rounded-lg transition">Upravit</button>
+              <button class="flex-1 text-sm bg-slate-100 hover:bg-slate-200 font-medium py-2 rounded-lg transition">Pauza</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl card-shadow overflow-hidden ring-2 ring-emerald-500 ring-offset-2 ring-offset-slate-50">
+          <div class="aspect-[4/3] bg-gradient-to-br from-red-600 to-red-900 relative overflow-hidden">
+            <div class="absolute inset-0 p-6 flex flex-col justify-end text-white">
+              <div class="text-[10px] uppercase tracking-wider opacity-80">Sklik · Search + Sklik Display</div>
+              <div class="heading text-xl font-extrabold mt-1">Prodám dům · Středočeský</div>
+              <div class="text-sm opacity-90">Majitelé RD do 50 km od Prahy</div>
+            </div>
+            <div class="absolute top-4 right-4 flex items-center gap-1.5 bg-emerald-500 px-2 py-1 rounded text-xs font-semibold">
+              🏆 Top výkon
+            </div>
+          </div>
+          <div class="p-5">
+            <div class="grid grid-cols-3 gap-3 mb-4">
+              <div>
+                <div class="text-xs text-slate-500">Leady</div>
+                <div class="heading text-xl font-bold text-slate-900">5</div>
+              </div>
+              <div>
+                <div class="text-xs text-slate-500">CPL</div>
+                <div class="heading text-xl font-bold text-emerald-600">240 Kč</div>
+              </div>
+              <div>
+                <div class="text-xs text-slate-500">Utraceno</div>
+                <div class="heading text-xl font-bold text-slate-900">1 200</div>
+              </div>
+            </div>
+            <div class="h-1.5 bg-slate-100 rounded-full mb-3">
+              <div class="h-full bg-red-500 rounded-full" style="width: 40%"></div>
+            </div>
+            <div class="text-xs text-slate-500">1 200 / 3 000 Kč budget</div>
+            <div class="flex items-center gap-2 mt-4">
+              <button class="flex-1 text-sm bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-medium py-2 rounded-lg transition">Navýšit budget</button>
+              <button class="flex-1 text-sm bg-slate-100 hover:bg-slate-200 font-medium py-2 rounded-lg transition">Upravit</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add new -->
+        <button class="border-2 border-dashed border-slate-300 rounded-2xl p-8 flex flex-col items-center justify-center text-slate-500 hover:border-brand-500 hover:bg-brand-50 hover:text-brand-700 transition min-h-[360px]">
+          <div class="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center mb-3">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          </div>
+          <div class="font-semibold">Vytvořit novou kampaň</div>
+          <div class="text-xs mt-1">AI ti ji postaví za 2 minuty</div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================== -->
+<!-- SCREEN: VŠECHNY LEADY (table view) -->
+<!-- =============================================== -->
+<div id="screen-leads-list" class="screen hide">
+  <div class="min-h-[calc(100vh-60px)] bg-slate-50 p-6 md:p-10">
+    <div class="max-w-[1400px] mx-auto">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="heading text-3xl font-extrabold text-slate-900">Všechny leady</h1>
+          <p class="text-slate-500 mt-1">187 leadů celkem · 23 tento měsíc · 12 čekají na kontakt</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold px-4 py-2.5 rounded-lg text-sm transition">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export CSV
+          </button>
+          <button class="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition shadow-lg shadow-brand-600/20">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            Přidat manuálně
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="bg-white border border-slate-200 rounded-xl p-4 mb-5 card-shadow">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-2 flex-1 min-w-[240px]">
+            <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" placeholder="Hledat jméno, telefon, lokalitu..." class="w-full outline-none text-sm">
+          </div>
+          <div class="h-6 w-px bg-slate-200"></div>
+          <select class="text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 outline-none">
+            <option>Všechny stavy</option>
+            <option>Nový</option>
+            <option>Kontaktován</option>
+            <option>Odhad / prohlídka</option>
+            <option>Zprostředkovatelská smlouva</option>
+            <option>Inzerát</option>
+            <option>Rezervace</option>
+            <option>Prodáno</option>
+          </select>
+          <select class="text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 outline-none">
+            <option>Všechny typy</option>
+            <option>Byt</option>
+            <option>Rodinný dům</option>
+            <option>Pozemek</option>
+            <option>Komerční</option>
+          </select>
+          <select class="text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 outline-none">
+            <option>Všechny kanály</option>
+            <option>Meta</option>
+            <option>Google</option>
+            <option>Sklik</option>
+          </select>
+          <select class="text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 outline-none">
+            <option>AI skóre: vše</option>
+            <option>🔥 Hot (8+)</option>
+            <option>Teplé (5–7)</option>
+            <option>Chladné (&lt; 5)</option>
+          </select>
+          <select class="text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 outline-none">
+            <option>Posledních 30 dní</option>
+            <option>Dnes</option>
+            <option>Tento týden</option>
+            <option>Tento měsíc</option>
+            <option>Vše</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Summary cards -->
+      <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-5">
+        <button class="bg-white border border-brand-200 ring-1 ring-brand-500 rounded-xl p-4 text-left hover:shadow-md transition">
+          <div class="text-xs text-slate-500 mb-1">Vše</div>
+          <div class="heading text-2xl font-extrabold text-slate-900">187</div>
+        </button>
+        <button class="bg-white border border-slate-200 rounded-xl p-4 text-left hover:border-brand-300 hover:shadow-sm transition">
+          <div class="text-xs text-slate-500 mb-1">Nové</div>
+          <div class="heading text-2xl font-extrabold text-brand-600">12</div>
+        </button>
+        <button class="bg-white border border-slate-200 rounded-xl p-4 text-left hover:border-brand-300 hover:shadow-sm transition">
+          <div class="text-xs text-slate-500 mb-1">V kontaktu</div>
+          <div class="heading text-2xl font-extrabold text-amber-600">34</div>
+        </button>
+        <button class="bg-white border border-slate-200 rounded-xl p-4 text-left hover:border-brand-300 hover:shadow-sm transition">
+          <div class="text-xs text-slate-500 mb-1">Odhady</div>
+          <div class="heading text-2xl font-extrabold text-purple-600">21</div>
+        </button>
+        <button class="bg-white border border-slate-200 rounded-xl p-4 text-left hover:border-brand-300 hover:shadow-sm transition">
+          <div class="text-xs text-slate-500 mb-1">Smlouvy</div>
+          <div class="heading text-2xl font-extrabold text-indigo-600">14</div>
+        </button>
+        <button class="bg-white border border-slate-200 rounded-xl p-4 text-left hover:border-brand-300 hover:shadow-sm transition">
+          <div class="text-xs text-slate-500 mb-1">Prodáno 💰</div>
+          <div class="heading text-2xl font-extrabold text-emerald-600">23</div>
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="bg-white border border-slate-200 rounded-xl card-shadow overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200">
+              <tr class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <th class="px-5 py-3"><input type="checkbox" class="rounded"></th>
+                <th class="px-5 py-3">Jméno</th>
+                <th class="px-5 py-3">Nemovitost k prodeji</th>
+                <th class="px-5 py-3">Odhad</th>
+                <th class="px-5 py-3">Skóre</th>
+                <th class="px-5 py-3">Stav</th>
+                <th class="px-5 py-3">Kanál</th>
+                <th class="px-5 py-3">Přišel</th>
+                <th class="px-5 py-3"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr onclick="showScreen('lead')" class="hover:bg-slate-50 cursor-pointer">
+                <td class="px-5 py-4" onclick="event.stopPropagation()"><input type="checkbox" class="rounded"></td>
+                <td class="px-5 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-brand-600 flex items-center justify-center text-white font-semibold text-xs">MN</div>
+                    <div>
+                      <div class="font-semibold text-slate-900">Marie Nováková</div>
+                      <div class="text-xs text-slate-500">+420 602 123 456</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-5 py-4 text-slate-700">
+                  <div>3+kk Praha 5 Smíchov</div>
+                  <div class="text-xs text-slate-500">87 m² · po rekonstrukci · do 3 měs.</div>
+                </td>
+                <td class="px-5 py-4"><span class="font-semibold text-slate-900">8 mil</span></td>
+                <td class="px-5 py-4"><span class="inline-flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">🔥 9/10</span></td>
+                <td class="px-5 py-4"><span class="inline-flex text-xs font-semibold text-brand-700 bg-brand-100 px-2 py-1 rounded">Nový</span></td>
+                <td class="px-5 py-4">
+                  <svg class="w-4 h-4 inline" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </td>
+                <td class="px-5 py-4 text-slate-500 text-xs">před 5 min</td>
+                <td class="px-5 py-4"><button onclick="event.stopPropagation()" class="w-8 h-8 rounded-full bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center text-white"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg></button></td>
+              </tr>
+
+              <tr onclick="showScreen('lead')" class="hover:bg-slate-50 cursor-pointer">
+                <td class="px-5 py-4" onclick="event.stopPropagation()"><input type="checkbox" class="rounded"></td>
+                <td class="px-5 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-slate-600 flex items-center justify-center text-white font-semibold text-xs">JK</div>
+                    <div>
+                      <div class="font-semibold text-slate-900">Jana Kolářová</div>
+                      <div class="text-xs text-slate-500">+420 721 987 654</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-5 py-4 text-slate-700">
+                  <div>RD Černošice</div>
+                  <div class="text-xs text-slate-500">180 m² + zahrada · rozvod</div>
+                </td>
+                <td class="px-5 py-4"><span class="font-semibold text-slate-900">12 mil</span></td>
+                <td class="px-5 py-4"><span class="inline-flex text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded">8/10</span></td>
+                <td class="px-5 py-4"><span class="inline-flex text-xs font-semibold text-brand-700 bg-brand-100 px-2 py-1 rounded">Nový</span></td>
+                <td class="px-5 py-4"><span class="w-4 h-4 inline-flex items-center justify-center bg-[#CC0000] rounded text-white font-bold text-[9px]">S</span></td>
+                <td class="px-5 py-4 text-slate-500 text-xs">dnes 8:42</td>
+                <td class="px-5 py-4"><button onclick="event.stopPropagation()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center"><svg class="w-3.5 h-3.5 text-slate-600" fill="currentColor" viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg></button></td>
+              </tr>
+
+              <tr onclick="showScreen('lead')" class="hover:bg-slate-50 cursor-pointer">
+                <td class="px-5 py-4" onclick="event.stopPropagation()"><input type="checkbox" class="rounded"></td>
+                <td class="px-5 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-slate-600 flex items-center justify-center text-white font-semibold text-xs">PD</div>
+                    <div>
+                      <div class="font-semibold text-slate-900">Petr Dvořák</div>
+                      <div class="text-xs text-slate-500">+420 608 445 221</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-5 py-4 text-slate-700">
+                  <div>Pozemek Beroun</div>
+                  <div class="text-xs text-slate-500">1 200 m² · zvažuje prodej · bez spěchu</div>
+                </td>
+                <td class="px-5 py-4"><span class="font-semibold text-slate-900">3 mil</span></td>
+                <td class="px-5 py-4"><span class="inline-flex text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded">7/10</span></td>
+                <td class="px-5 py-4"><span class="inline-flex text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-1 rounded">V kontaktu</span></td>
+                <td class="px-5 py-4">
+                  <div class="flex gap-0.5 inline-flex"><span class="w-1.5 h-1.5 bg-[#4285F4] rounded-sm"></span><span class="w-1.5 h-1.5 bg-[#EA4335] rounded-sm"></span><span class="w-1.5 h-1.5 bg-[#FBBC05] rounded-sm"></span><span class="w-1.5 h-1.5 bg-[#34A853] rounded-sm"></span></div>
+                </td>
+                <td class="px-5 py-4 text-slate-500 text-xs">včera 14:12</td>
+                <td class="px-5 py-4"><button onclick="event.stopPropagation()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center"><svg class="w-3.5 h-3.5 text-slate-600" fill="currentColor" viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg></button></td>
+              </tr>
+
+              <tr onclick="showScreen('lead')" class="hover:bg-slate-50 cursor-pointer">
+                <td class="px-5 py-4" onclick="event.stopPropagation()"><input type="checkbox" class="rounded"></td>
+                <td class="px-5 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-slate-600 flex items-center justify-center text-white font-semibold text-xs">TH</div>
+                    <div>
+                      <div class="font-semibold text-slate-900">Tomáš Horák</div>
+                      <div class="text-xs text-slate-500">+420 777 543 210</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-5 py-4 text-slate-700">
+                  <div>3+kk Praha 6</div>
+                  <div class="text-xs text-slate-500">74 m² · zděděný byt · větší rodina</div>
+                </td>
+                <td class="px-5 py-4"><span class="font-semibold text-slate-900">7 mil</span></td>
+                <td class="px-5 py-4"><span class="inline-flex text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded">6/10</span></td>
+                <td class="px-5 py-4"><span class="inline-flex text-xs font-semibold text-purple-700 bg-purple-100 px-2 py-1 rounded">Odhad</span></td>
+                <td class="px-5 py-4"><svg class="w-4 h-4 inline" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></td>
+                <td class="px-5 py-4 text-slate-500 text-xs">před 3 dny</td>
+                <td class="px-5 py-4"><button onclick="event.stopPropagation()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center"><svg class="w-3.5 h-3.5 text-slate-600" fill="currentColor" viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg></button></td>
+              </tr>
+
+              <tr onclick="showScreen('lead')" class="hover:bg-slate-50 cursor-pointer">
+                <td class="px-5 py-4" onclick="event.stopPropagation()"><input type="checkbox" class="rounded"></td>
+                <td class="px-5 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-slate-600 flex items-center justify-center text-white font-semibold text-xs">LB</div>
+                    <div>
+                      <div class="font-semibold text-slate-900">Lucie Beránková</div>
+                      <div class="text-xs text-slate-500">+420 774 112 998</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-5 py-4 text-slate-700">
+                  <div>1+1 Praha 4 Modřany</div>
+                  <div class="text-xs text-slate-500">42 m² · chce menší s výtahem</div>
+                </td>
+                <td class="px-5 py-4"><span class="font-semibold text-slate-900">4,5 mil</span></td>
+                <td class="px-5 py-4"><span class="inline-flex text-xs font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded">5/10</span></td>
+                <td class="px-5 py-4"><span class="inline-flex text-xs font-semibold text-indigo-700 bg-indigo-100 px-2 py-1 rounded">Smlouva</span></td>
+                <td class="px-5 py-4"><span class="w-4 h-4 inline-flex items-center justify-center bg-[#CC0000] rounded text-white font-bold text-[9px]">S</span></td>
+                <td class="px-5 py-4 text-slate-500 text-xs">před 5 dny</td>
+                <td class="px-5 py-4"><button onclick="event.stopPropagation()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center"><svg class="w-3.5 h-3.5 text-slate-600" fill="currentColor" viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg></button></td>
+              </tr>
+
+              <tr onclick="showScreen('lead')" class="hover:bg-slate-50 cursor-pointer">
+                <td class="px-5 py-4" onclick="event.stopPropagation()"><input type="checkbox" class="rounded"></td>
+                <td class="px-5 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center text-white font-semibold text-xs">MS</div>
+                    <div>
+                      <div class="font-semibold text-slate-900">Martin Svoboda</div>
+                      <div class="text-xs text-slate-500">+420 603 221 445</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-5 py-4 text-slate-700">
+                  <div>RD Mladá Boleslav</div>
+                  <div class="text-xs text-slate-500">prodáno za 5,7 mil · provize 170k</div>
+                </td>
+                <td class="px-5 py-4"><span class="font-semibold text-emerald-700">5,7 mil ✓</span></td>
+                <td class="px-5 py-4"><span class="inline-flex text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">🔥 9/10</span></td>
+                <td class="px-5 py-4"><span class="inline-flex text-xs font-semibold text-emerald-700 bg-emerald-100 px-2 py-1 rounded">Prodáno ✓</span></td>
+                <td class="px-5 py-4"><svg class="w-4 h-4 inline" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></td>
+                <td class="px-5 py-4 text-slate-500 text-xs">před 2 týdny</td>
+                <td class="px-5 py-4"><button onclick="event.stopPropagation()" class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center"><svg class="w-3.5 h-3.5 text-emerald-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="flex items-center justify-between px-5 py-4 border-t border-slate-100 bg-slate-50 text-sm">
+          <div class="text-slate-500">Zobrazeno 1–6 z 187 leadů</div>
+          <div class="flex items-center gap-1">
+            <button class="px-3 py-1.5 rounded hover:bg-white text-slate-500">←</button>
+            <button class="px-3 py-1.5 rounded bg-brand-600 text-white font-medium">1</button>
+            <button class="px-3 py-1.5 rounded hover:bg-white text-slate-700">2</button>
+            <button class="px-3 py-1.5 rounded hover:bg-white text-slate-700">3</button>
+            <span class="px-2 text-slate-400">...</span>
+            <button class="px-3 py-1.5 rounded hover:bg-white text-slate-700">32</button>
+            <button class="px-3 py-1.5 rounded hover:bg-white text-slate-700">→</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================== -->
+<!-- SCREEN: NOVÁ KAMPAŇ (AI WIZARD) -->
+<!-- =============================================== -->
+<div id="screen-create-campaign" class="screen hide">
+  <div class="min-h-[calc(100vh-60px)] bg-slate-50 p-6 md:p-10">
+    <div class="max-w-5xl mx-auto">
+      <button onclick="showScreen('campaigns')" class="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 mb-6 font-medium">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Zpět na kampaně
+      </button>
+
+      <div class="mb-8">
+        <div class="inline-flex items-center gap-2 px-3 py-1 bg-brand-100 text-brand-700 rounded-full text-xs font-semibold mb-3">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          AI-driven campaign builder
+        </div>
+        <h1 class="heading text-4xl font-extrabold text-slate-900">Nová kampaň</h1>
+        <p class="text-slate-500 mt-2">Odpověz na pár otázek — AI sám vytvoří kreativy, landing page a spustí kampaň napříč kanály.</p>
+      </div>
+
+      <!-- Step 1: Typ -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 card-shadow mb-5">
+        <div class="flex items-start gap-4 mb-5">
+          <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold flex-shrink-0">1</div>
+          <div>
+            <h3 class="heading font-bold text-lg text-slate-900">Jaké majitele hledáš?</h3>
+            <p class="text-sm text-slate-500">Cílíme na lidi, kteří vlastní daný typ nemovitosti a zvažují prodej.</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 ml-12">
+          <button class="text-left p-4 bg-brand-50 border-2 border-brand-500 rounded-xl">
+            <div class="text-2xl mb-1">🏠</div>
+            <div class="font-semibold text-slate-900 text-sm">Majitelé bytů</div>
+            <div class="text-xs text-slate-500">2+kk, 3+kk, 4+kk</div>
+          </button>
+          <button class="text-left p-4 bg-white border-2 border-slate-200 rounded-xl hover:border-slate-300">
+            <div class="text-2xl mb-1">🏡</div>
+            <div class="font-semibold text-slate-900 text-sm">Majitelé RD</div>
+            <div class="text-xs text-slate-500">Rodinné domy, vily</div>
+          </button>
+          <button class="text-left p-4 bg-white border-2 border-slate-200 rounded-xl hover:border-slate-300">
+            <div class="text-2xl mb-1">🌳</div>
+            <div class="font-semibold text-slate-900 text-sm">Majitelé pozemků</div>
+            <div class="text-xs text-slate-500">Stavební, rekreační</div>
+          </button>
+          <button class="text-left p-4 bg-white border-2 border-slate-200 rounded-xl hover:border-slate-300">
+            <div class="text-2xl mb-1">🏢</div>
+            <div class="font-semibold text-slate-900 text-sm">Komerční</div>
+            <div class="text-xs text-slate-500">Kanceláře, sklady</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Lokalita + rozpočet -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 card-shadow mb-5">
+        <div class="flex items-start gap-4 mb-5">
+          <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold flex-shrink-0">2</div>
+          <div>
+            <h3 class="heading font-bold text-lg text-slate-900">Kde a za kolik?</h3>
+            <p class="text-sm text-slate-500">AI odhadne cenu leadu a optimální rozpočet.</p>
+          </div>
+        </div>
+        <div class="ml-12 grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Lokalita</label>
+            <div class="mt-2 px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm">Praha 5, Praha 6, Černošice <span class="text-brand-600">+ přidat</span></div>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Měsíční budget</label>
+            <div class="mt-2 flex items-center gap-3">
+              <input type="range" min="1000" max="30000" value="7500" class="flex-1">
+              <div class="bg-brand-600 text-white font-bold px-3 py-1.5 rounded-lg text-sm">7 500 Kč</div>
+            </div>
+            <div class="text-xs text-slate-500 mt-2">AI odhad: <strong class="text-slate-900">~ 18 leadů/měs</strong> @ 420 Kč/lead</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: AI kreativy -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 card-shadow mb-5">
+        <div class="flex items-start gap-4 mb-5">
+          <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold flex-shrink-0">3</div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="heading font-bold text-lg text-slate-900">AI kreativy</h3>
+                <p class="text-sm text-slate-500">Vygenerováno za 40 sekund · 6 variant</p>
+              </div>
+              <button class="flex items-center gap-2 text-sm text-brand-600 hover:text-brand-700 font-medium">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Regenerovat
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="ml-12 grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div class="relative rounded-xl overflow-hidden border border-slate-200 ring-2 ring-brand-500 ring-offset-2">
+            <div class="aspect-square bg-gradient-to-br from-brand-600 to-brand-900 p-4 text-white flex flex-col justify-between">
+              <div class="text-[10px] bg-white/20 backdrop-blur rounded px-2 py-0.5 inline-block self-start">Var. A · AI</div>
+              <div>
+                <div class="text-xl font-bold leading-tight">Kolik stojí váš byt?</div>
+                <div class="text-xs opacity-90 mt-1">Odhad zdarma za 60 sekund · Praha 5</div>
+              </div>
+            </div>
+            <div class="absolute top-2 right-2 bg-white rounded-full w-5 h-5 flex items-center justify-center"><svg class="w-3 h-3 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></div>
+          </div>
+
+          <div class="rounded-xl overflow-hidden border border-slate-200 hover:ring-2 hover:ring-brand-400 cursor-pointer">
+            <div class="aspect-square bg-gradient-to-br from-amber-500 to-red-700 p-4 text-white flex flex-col justify-between">
+              <div class="text-[10px] bg-white/20 backdrop-blur rounded px-2 py-0.5 inline-block self-start">Var. B · AI</div>
+              <div>
+                <div class="text-xl font-bold leading-tight">Chcete prodat byt v Praze?</div>
+                <div class="text-xs opacity-90 mt-1">Rychle, výhodně, bez stresu</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-xl overflow-hidden border border-slate-200 hover:ring-2 hover:ring-brand-400 cursor-pointer">
+            <div class="aspect-square bg-gradient-to-br from-emerald-500 to-teal-800 p-4 text-white flex flex-col justify-between">
+              <div class="text-[10px] bg-white/20 backdrop-blur rounded px-2 py-0.5 inline-block self-start">Var. C · AI</div>
+              <div>
+                <div class="text-xl font-bold leading-tight">Prodej bez starostí</div>
+                <div class="text-xs opacity-90 mt-1">Kompletní servis od A do Z</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-xl overflow-hidden border border-slate-200 hover:ring-2 hover:ring-brand-400 cursor-pointer">
+            <div class="aspect-square bg-gradient-to-br from-slate-700 to-slate-900 p-4 text-white flex flex-col justify-between">
+              <div class="text-[10px] bg-white/20 backdrop-blur rounded px-2 py-0.5 inline-block self-start">Var. D · AI</div>
+              <div>
+                <div class="text-xl font-bold leading-tight">Prodám svůj byt</div>
+                <div class="text-xs opacity-90 mt-1">Kolik za něj dostanu?</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-xl overflow-hidden border border-slate-200 hover:ring-2 hover:ring-brand-400 cursor-pointer">
+            <div class="aspect-square bg-gradient-to-br from-purple-600 to-indigo-900 p-4 text-white flex flex-col justify-between">
+              <div class="text-[10px] bg-white/20 backdrop-blur rounded px-2 py-0.5 inline-block self-start">Var. E · AI</div>
+              <div>
+                <div class="text-xl font-bold leading-tight">Byt na Praze 5?</div>
+                <div class="text-xs opacity-90 mt-1">Ceny letí nahoru. Teď je čas.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-xl overflow-hidden border-2 border-dashed border-slate-300 hover:border-brand-500 cursor-pointer flex items-center justify-center text-slate-500 hover:text-brand-600 aspect-square">
+            <div class="text-center">
+              <svg class="w-6 h-6 mx-auto mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+              <div class="text-xs">Víc variant</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Rozdělení -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 card-shadow mb-5">
+        <div class="flex items-start gap-4 mb-5">
+          <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold flex-shrink-0">4</div>
+          <div>
+            <h3 class="heading font-bold text-lg text-slate-900">Rozdělení budgetu napříč kanály</h3>
+            <p class="text-sm text-slate-500">AI navrhuje podle tvých předchozích kampaní. Můžeš upravit.</p>
+          </div>
+        </div>
+        <div class="ml-12 space-y-4">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                <span class="font-semibold">Meta (FB + IG)</span>
+              </div>
+              <span class="font-bold text-slate-900">3 000 Kč · 40 %</span>
+            </div>
+            <div class="h-3 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-[#1877F2]" style="width:40%"></div></div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <div class="flex gap-0.5"><span class="w-2.5 h-2.5 bg-[#4285F4] rounded-sm"></span><span class="w-2.5 h-2.5 bg-[#EA4335] rounded-sm"></span><span class="w-2.5 h-2.5 bg-[#FBBC05] rounded-sm"></span><span class="w-2.5 h-2.5 bg-[#34A853] rounded-sm"></span></div>
+                <span class="font-semibold">Google Ads</span>
+              </div>
+              <span class="font-bold text-slate-900">2 700 Kč · 36 %</span>
+            </div>
+            <div class="h-3 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-[#4285F4] via-[#FBBC05] to-[#34A853]" style="width:36%"></div></div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="w-5 h-5 bg-[#CC0000] rounded flex items-center justify-center text-white font-bold text-xs">S</span>
+                <span class="font-semibold">Sklik</span>
+                <span class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-semibold">Nejlevnější v ČR</span>
+              </div>
+              <span class="font-bold text-slate-900">1 800 Kč · 24 %</span>
+            </div>
+            <div class="h-3 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-[#CC0000]" style="width:24%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Launch -->
+      <div class="bg-gradient-to-r from-brand-700 to-brand-900 rounded-2xl p-8 text-white flex items-center justify-between card-shadow">
+        <div>
+          <h3 class="heading text-2xl font-extrabold">Připraveno ke spuštění</h3>
+          <p class="text-brand-100 mt-1">Kampaň poběží do 10 minut. Ads účty jsou ověřené, kreativy schválené.</p>
+        </div>
+        <button class="bg-white text-brand-700 hover:bg-brand-50 font-bold px-8 py-4 rounded-xl transition shadow-xl">
+          Spustit kampaň →
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================== -->
+<!-- SCREEN: STATISTIKY -->
+<!-- =============================================== -->
+<div id="screen-stats" class="screen hide">
+  <div class="min-h-[calc(100vh-60px)] bg-slate-50 p-6 md:p-10">
+    <div class="max-w-[1400px] mx-auto">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="heading text-3xl font-extrabold text-slate-900">Statistiky</h1>
+          <p class="text-slate-500 mt-1">Kompletní přehled výkonu · dubnové porovnání</p>
+        </div>
+        <div class="flex bg-white border border-slate-200 rounded-lg p-1">
+          <button class="px-3 py-1.5 text-sm text-slate-600 rounded hover:bg-slate-50">7 dní</button>
+          <button class="px-3 py-1.5 text-sm bg-brand-600 text-white rounded font-medium">30 dní</button>
+          <button class="px-3 py-1.5 text-sm text-slate-600 rounded hover:bg-slate-50">3 měsíce</button>
+          <button class="px-3 py-1.5 text-sm text-slate-600 rounded hover:bg-slate-50">Rok</button>
+        </div>
+      </div>
+
+      <!-- Top metrics -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white border border-slate-200 rounded-xl p-5 card-shadow">
+          <div class="text-xs text-slate-500 mb-1">Celkem leadů</div>
+          <div class="flex items-baseline gap-2">
+            <span class="heading text-3xl font-extrabold text-slate-900">187</span>
+            <span class="text-xs font-semibold text-emerald-600">+37 %</span>
+          </div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5 card-shadow">
+          <div class="text-xs text-slate-500 mb-1">Ø cena leadu</div>
+          <div class="flex items-baseline gap-2">
+            <span class="heading text-3xl font-extrabold text-slate-900">380 Kč</span>
+            <span class="text-xs font-semibold text-emerald-600">−12 %</span>
+          </div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5 card-shadow">
+          <div class="text-xs text-slate-500 mb-1">Utraceno</div>
+          <div class="flex items-baseline gap-2">
+            <span class="heading text-3xl font-extrabold text-slate-900">71 060</span>
+            <span class="text-xs text-slate-500">Kč</span>
+          </div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5 card-shadow">
+          <div class="text-xs text-slate-500 mb-1">Uzavřené obchody</div>
+          <div class="flex items-baseline gap-2">
+            <span class="heading text-3xl font-extrabold text-emerald-600">8</span>
+            <span class="text-xs font-semibold text-slate-500">~ 840 000 Kč provize</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid lg:grid-cols-3 gap-6 mb-6">
+        <!-- Leady v čase -->
+        <div class="lg:col-span-2 bg-white border border-slate-200 rounded-xl card-shadow p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="heading font-bold text-lg text-slate-900">Leady v čase</h3>
+              <p class="text-xs text-slate-500">Denní počet nových leadů</p>
+            </div>
+            <div class="flex gap-3 text-xs">
+              <span class="flex items-center gap-1.5"><span class="w-2 h-2 bg-brand-500 rounded-full"></span>Leady</span>
+              <span class="flex items-center gap-1.5"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span>Schůzky</span>
+            </div>
+          </div>
+          <svg viewBox="0 0 600 220" class="w-full">
+            <defs>
+              <linearGradient id="grad-blue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2563eb" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Grid -->
+            <g stroke="#e2e8f0" stroke-width="1">
+              <line x1="40" y1="30" x2="580" y2="30"/>
+              <line x1="40" y1="80" x2="580" y2="80"/>
+              <line x1="40" y1="130" x2="580" y2="130"/>
+              <line x1="40" y1="180" x2="580" y2="180"/>
+            </g>
+            <!-- Y labels -->
+            <g fill="#94a3b8" font-size="10" font-family="Inter">
+              <text x="30" y="35" text-anchor="end">12</text>
+              <text x="30" y="85" text-anchor="end">8</text>
+              <text x="30" y="135" text-anchor="end">4</text>
+              <text x="30" y="185" text-anchor="end">0</text>
+            </g>
+            <!-- Area chart for leads -->
+            <path d="M60,160 L110,140 L160,150 L210,100 L260,120 L310,80 L360,70 L410,95 L460,50 L510,65 L560,40 L560,180 L60,180 Z" fill="url(#grad-blue)"/>
+            <!-- Line for leads -->
+            <path d="M60,160 L110,140 L160,150 L210,100 L260,120 L310,80 L360,70 L410,95 L460,50 L510,65 L560,40" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Dots -->
+            <g fill="#2563eb">
+              <circle cx="60" cy="160" r="4"/>
+              <circle cx="160" cy="150" r="4"/>
+              <circle cx="260" cy="120" r="4"/>
+              <circle cx="360" cy="70" r="4"/>
+              <circle cx="460" cy="50" r="4"/>
+              <circle cx="560" cy="40" r="4"/>
+            </g>
+            <!-- Schůzky line -->
+            <path d="M60,175 L110,170 L160,168 L210,150 L260,160 L310,140 L360,130 L410,145 L460,120 L510,130 L560,115" stroke="#10b981" stroke-width="2" stroke-dasharray="4 3" fill="none"/>
+            <!-- X labels -->
+            <g fill="#94a3b8" font-size="10" font-family="Inter">
+              <text x="60" y="205" text-anchor="middle">18.3.</text>
+              <text x="160" y="205" text-anchor="middle">24.3.</text>
+              <text x="260" y="205" text-anchor="middle">30.3.</text>
+              <text x="360" y="205" text-anchor="middle">5.4.</text>
+              <text x="460" y="205" text-anchor="middle">11.4.</text>
+              <text x="560" y="205" text-anchor="middle">Dnes</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Funnel -->
+        <div class="bg-white border border-slate-200 rounded-xl card-shadow p-6">
+          <h3 class="heading font-bold text-lg text-slate-900 mb-1">Konverzní trychtýř</h3>
+          <p class="text-xs text-slate-500 mb-5">Od leadu k prodané nemovitosti</p>
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between text-sm mb-1"><span class="font-medium">Leady (majitelé)</span><span class="font-bold">187</span></div>
+              <div class="h-8 bg-brand-600 rounded"></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sm mb-1"><span class="font-medium">Kontaktováno</span><span class="font-bold">156 <span class="text-slate-400 font-normal">· 83 %</span></span></div>
+              <div class="h-8 bg-brand-500 rounded" style="width:83%"></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sm mb-1"><span class="font-medium">Odhad / prohlídka</span><span class="font-bold">54 <span class="text-slate-400 font-normal">· 29 %</span></span></div>
+              <div class="h-8 bg-brand-400 rounded" style="width:29%"></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sm mb-1"><span class="font-medium">Zprostředkovatelská smlouva</span><span class="font-bold">24 <span class="text-slate-400 font-normal">· 13 %</span></span></div>
+              <div class="h-8 bg-brand-300 rounded" style="width:13%"></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sm mb-1"><span class="font-medium">Prodáno ✓</span><span class="font-bold text-emerald-600">8 <span class="text-slate-400 font-normal">· 4,3 %</span></span></div>
+              <div class="h-8 bg-emerald-500 rounded" style="width:4.3%"></div>
+            </div>
+          </div>
+          <div class="mt-5 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm">
+            <strong class="text-emerald-900">Výborně.</strong> Průměr v oboru je 2,1 % → jsi <strong>2× nad oborem</strong>.
+          </div>
+        </div>
+      </div>
+
+      <!-- Kanály a kampaně -->
+      <div class="grid lg:grid-cols-2 gap-6">
+        <div class="bg-white border border-slate-200 rounded-xl card-shadow p-6">
+          <h3 class="heading font-bold text-lg text-slate-900 mb-5">Výkon podle kanálu</h3>
+          <svg viewBox="0 0 400 180" class="w-full">
+            <!-- Grid -->
+            <g stroke="#e2e8f0" stroke-width="1">
+              <line x1="60" y1="20" x2="390" y2="20"/>
+              <line x1="60" y1="70" x2="390" y2="70"/>
+              <line x1="60" y1="120" x2="390" y2="120"/>
+            </g>
+            <!-- Meta -->
+            <g>
+              <rect x="80" y="35" width="50" height="85" fill="#1877F2" rx="4"/>
+              <text x="105" y="140" text-anchor="middle" font-size="11" fill="#475569" font-family="Inter">Meta</text>
+              <text x="105" y="155" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="Inter">86 leadů</text>
+              <text x="105" y="30" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="bold" font-family="Inter">450 Kč</text>
+            </g>
+            <!-- Google -->
+            <g>
+              <rect x="180" y="55" width="50" height="65" fill="#4285F4" rx="4"/>
+              <text x="205" y="140" text-anchor="middle" font-size="11" fill="#475569" font-family="Inter">Google</text>
+              <text x="205" y="155" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="Inter">58 leadů</text>
+              <text x="205" y="50" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="bold" font-family="Inter">380 Kč</text>
+            </g>
+            <!-- Sklik -->
+            <g>
+              <rect x="280" y="85" width="50" height="35" fill="#CC0000" rx="4"/>
+              <text x="305" y="140" text-anchor="middle" font-size="11" fill="#475569" font-family="Inter">Sklik 🏆</text>
+              <text x="305" y="155" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="Inter">43 leadů</text>
+              <text x="305" y="80" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="bold" font-family="Inter">240 Kč</text>
+            </g>
+          </svg>
+          <div class="text-xs text-slate-500 text-center mt-3">Výška sloupce = CPL (cena za lead) · níž = lépe</div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-xl card-shadow p-6">
+          <h3 class="heading font-bold text-lg text-slate-900 mb-5">Top kampaně</h3>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <div>
+                <div class="font-semibold text-slate-900 text-sm">Prodám dům Středočeský (Sklik)</div>
+                <div class="text-xs text-slate-500 mt-0.5">43 leadů · 2 uzavřené smlouvy</div>
+              </div>
+              <div class="text-right">
+                <div class="heading text-lg font-bold text-emerald-700">ROI 18×</div>
+                <div class="text-xs text-emerald-600">240 Kč/lead</div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
+              <div>
+                <div class="font-semibold text-slate-900 text-sm">Odhad bytu Praha 5 (Meta)</div>
+                <div class="text-xs text-slate-500 mt-0.5">52 leadů · 3 uzavřené smlouvy</div>
+              </div>
+              <div class="text-right">
+                <div class="heading text-lg font-bold text-slate-900">ROI 12×</div>
+                <div class="text-xs text-slate-500">450 Kč/lead</div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
+              <div>
+                <div class="font-semibold text-slate-900 text-sm">Prodej pozemku Beroun (Google)</div>
+                <div class="text-xs text-slate-500 mt-0.5">38 leadů · 1 uzavřená</div>
+              </div>
+              <div class="text-right">
+                <div class="heading text-lg font-bold text-slate-900">ROI 8×</div>
+                <div class="text-xs text-slate-500">380 Kč/lead</div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
+              <div>
+                <div class="font-semibold text-slate-900 text-sm">Odhad 3+kk Praha 6 (Meta)</div>
+                <div class="text-xs text-slate-500 mt-0.5">34 leadů · 2 uzavřené</div>
+              </div>
+              <div class="text-right">
+                <div class="heading text-lg font-bold text-slate-900">ROI 11×</div>
+                <div class="text-xs text-slate-500">520 Kč/lead</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================== -->
+<!-- SCREEN: LANDING PAGE PREVIEW -->
+<!-- =============================================== -->
+<div id="screen-landing" class="screen hide">
+  <div class="min-h-[calc(100vh-60px)] bg-slate-100 p-6 md:p-10">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="heading text-3xl font-extrabold text-slate-900">Landing page</h1>
+          <p class="text-slate-500 mt-1">Co vidí lead, když klikne na tvou reklamu. Generováno AI per kampaň.</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg font-medium">Desktop</button>
+          <button class="px-3 py-2 text-sm bg-brand-600 text-white rounded-lg font-medium">Mobil</button>
+          <button class="px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg font-medium flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            Otevřít
+          </button>
+        </div>
+      </div>
+
+      <div class="grid lg:grid-cols-3 gap-6">
+        <!-- Preview -->
+        <div class="lg:col-span-2">
+          <!-- Browser chrome -->
+          <div class="bg-white rounded-t-xl border border-slate-200 border-b-0 px-4 py-3 flex items-center gap-2">
+            <div class="flex gap-1.5">
+              <div class="w-3 h-3 rounded-full bg-red-400"></div>
+              <div class="w-3 h-3 rounded-full bg-amber-400"></div>
+              <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
+            </div>
+            <div class="flex-1 bg-slate-100 rounded px-3 py-1 text-xs text-slate-500 truncate ml-3">leadpilot.cz/odhad/praha5-byty/jaroslav-simek</div>
+          </div>
+
+          <!-- Actual landing page -->
+          <div class="bg-white rounded-b-xl border border-slate-200 overflow-hidden">
+            <!-- Hero -->
+            <div class="gradient-brand p-10 text-white relative">
+              <div class="relative z-10 max-w-lg">
+                <div class="text-xs uppercase tracking-wider text-brand-200 font-medium mb-2">Zdarma · bez závazků</div>
+                <h1 class="heading text-4xl font-extrabold leading-tight mb-4">Kolik stojí váš byt<br>na Praze 5?</h1>
+                <p class="text-brand-100 mb-6">Získejte nezávislý odhad tržní ceny od ověřeného makléře. Vyplnění zabere 60 sekund, odhad vám pošlu do 24 hodin.</p>
+                <div class="flex items-center gap-3 text-sm">
+                  <div class="flex -space-x-2">
+                    <div class="w-8 h-8 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center text-xs font-semibold">★★</div>
+                  </div>
+                  <span class="text-brand-100"><strong>4,9/5</strong> · 187 odhadů tento měsíc</span>
+                </div>
+              </div>
+              <!-- House graphic -->
+              <div class="absolute right-0 bottom-0 w-64 h-48 opacity-20">
+                <svg viewBox="0 0 200 150" class="w-full h-full"><path d="M100,10 L180,70 L180,140 L20,140 L20,70 Z" fill="white"/><rect x="80" y="90" width="40" height="50" fill="#1e3a8a"/><rect x="40" y="90" width="30" height="30" fill="#1e3a8a"/><rect x="130" y="90" width="30" height="30" fill="#1e3a8a"/></svg>
+              </div>
+            </div>
+
+            <!-- Trust strip -->
+            <div class="bg-slate-50 py-4 px-10 border-b border-slate-200 flex items-center justify-between flex-wrap gap-4 text-xs text-slate-600">
+              <div class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>Odhad zdarma</div>
+              <div class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>Bez závazků</div>
+              <div class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>Reakce do 24 h</div>
+              <div class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>Ověřený makléř</div>
+            </div>
+
+            <!-- Form -->
+            <div class="p-10">
+              <div class="max-w-md mx-auto">
+                <h2 class="heading text-2xl font-extrabold text-slate-900 mb-1">Vaše nemovitost</h2>
+                <p class="text-slate-500 text-sm mb-6">Vyplnění zabere 60 sekund.</p>
+                <div class="space-y-3">
+                  <div>
+                    <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Typ nemovitosti</label>
+                    <div class="mt-1 grid grid-cols-4 gap-2">
+                      <button class="px-2 py-2.5 text-xs bg-brand-50 border-2 border-brand-500 rounded-lg font-semibold text-brand-700">Byt</button>
+                      <button class="px-2 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg hover:border-brand-500">RD</button>
+                      <button class="px-2 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg hover:border-brand-500">Pozemek</button>
+                      <button class="px-2 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg hover:border-brand-500">Komerce</button>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Dispozice</label>
+                    <div class="mt-1 flex gap-2">
+                      <button class="flex-1 px-2 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg hover:border-brand-500">1+kk</button>
+                      <button class="flex-1 px-2 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg hover:border-brand-500">2+kk</button>
+                      <button class="flex-1 px-2 py-2.5 text-xs bg-brand-50 border-2 border-brand-500 rounded-lg font-semibold text-brand-700">3+kk</button>
+                      <button class="flex-1 px-2 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg hover:border-brand-500">4+</button>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Adresa / lokalita</label>
+                    <input type="text" placeholder="Ulice, městská část (např. Praha 5 Smíchov)" class="mt-1 w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-brand-500">
+                  </div>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Výměra (m²)</label>
+                      <input type="number" placeholder="87" class="mt-1 w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-brand-500">
+                    </div>
+                    <div>
+                      <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Stav</label>
+                      <select class="mt-1 w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-brand-500">
+                        <option>Po rekonstrukci</option>
+                        <option>Dobrý</option>
+                        <option>Původní</option>
+                        <option>Před rekonstrukcí</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kdy zvažujete prodej?</label>
+                    <select class="mt-1 w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-brand-500">
+                      <option>Do 3 měsíců</option>
+                      <option>3–6 měsíců</option>
+                      <option>Během roku</option>
+                      <option>Jen sleduji trh</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Telefon pro odhad</label>
+                    <input type="tel" placeholder="+420" class="mt-1 w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-brand-500">
+                  </div>
+                  <button class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-brand-600/25 text-sm">Získat odhad zdarma →</button>
+                  <p class="text-[10px] text-center text-slate-400">Zavoláme pouze ohledně vašeho odhadu. Bez spamu, bez závazků.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats + info -->
+        <div class="space-y-4">
+          <div class="bg-white border border-slate-200 rounded-xl card-shadow p-5">
+            <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">Výkon této stránky</div>
+            <div class="space-y-4">
+              <div>
+                <div class="text-sm text-slate-500">Návštěv (30 dní)</div>
+                <div class="heading text-2xl font-extrabold text-slate-900">2 847</div>
+              </div>
+              <div>
+                <div class="text-sm text-slate-500">Odeslaných formulářů</div>
+                <div class="heading text-2xl font-extrabold text-slate-900">187</div>
+                <div class="text-xs text-emerald-600 font-medium">Konverze 6,6 % (benchmark 2–4 %)</div>
+              </div>
+              <div>
+                <div class="text-sm text-slate-500">Průměrná doba na stránce</div>
+                <div class="heading text-2xl font-extrabold text-slate-900">1:47</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-brand-50 border border-brand-200 rounded-xl p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-6 h-6 bg-brand-600 rounded-md flex items-center justify-center">
+                <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 4.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM12 18a6 6 0 01-5.4-3.5h10.8A6 6 0 0112 18z"/></svg>
+              </div>
+              <span class="font-semibold text-brand-900">AI doporučení</span>
+            </div>
+            <p class="text-sm text-brand-900 mb-3">Tvoje konverze 6,6 % je vynikající. Zkusil bych přidat klientskou recenzi — benchmarky ukazují další +0,5–1 %.</p>
+            <button class="w-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold py-2 rounded-lg transition">Vygenerovat variantu</button>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">A/B test</div>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <div>
+                  <div class="text-sm font-semibold text-slate-900">Varianta A (současná)</div>
+                  <div class="text-xs text-slate-500">2+kk v nadpisu</div>
+                </div>
+                <div class="heading text-lg font-bold text-emerald-600">6,6 %</div>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <div>
+                  <div class="text-sm font-semibold text-slate-900">Varianta B</div>
+                  <div class="text-xs text-slate-500">"Snový byt" nadpis</div>
+                </div>
+                <div class="heading text-lg font-bold text-slate-500">4,2 %</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================== -->
+<!-- SCREEN: MONITOR KATASTRU (PREMIUM) -->
+<!-- =============================================== -->
+<div id="screen-cadastre" class="screen hide">
+  <div class="min-h-[calc(100vh-60px)] bg-slate-50 p-6 md:p-10">
+    <div class="max-w-[1400px] mx-auto">
+
+      <!-- Hero -->
+      <div class="relative bg-gradient-to-br from-amber-500 via-amber-600 to-amber-800 rounded-2xl overflow-hidden mb-8 text-white card-shadow">
+        <div class="absolute inset-0 opacity-10">
+          <svg viewBox="0 0 400 200" class="w-full h-full"><path d="M0,100 Q100,60 200,80 T400,90 L400,200 L0,200Z" fill="white"/></svg>
+        </div>
+        <div class="relative p-8 md:p-10 flex items-center gap-8">
+          <div class="flex-1">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+              ⭐ Premium add-on · 1 990 Kč/měs
+            </div>
+            <h1 class="heading text-4xl md:text-5xl font-extrabold leading-tight mb-3">Monitor katastru</h1>
+            <p class="text-lg text-amber-50 max-w-2xl leading-relaxed">
+              AI denně skenuje katastr nemovitostí a hledá <strong>signály blížícího se prodeje</strong> — dědická řízení, exekuce, insolvence. Novým majitelům automaticky posílá personalizovaný dopis.
+            </p>
+          </div>
+          <!-- Stats -->
+          <div class="hidden lg:block text-right">
+            <div class="text-xs uppercase tracking-wider text-amber-100">Reply rate</div>
+            <div class="heading text-5xl font-extrabold">21 %</div>
+            <div class="text-sm text-amber-100 mt-1">dopisů vede k hovoru</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metrics -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white border border-slate-200 rounded-xl p-5 card-shadow">
+          <div class="flex items-center gap-2 text-xs text-slate-500 mb-2">
+            <span class="w-2 h-2 bg-amber-500 rounded-full pulse-dot"></span>
+            Detekováno tento měsíc
+          </div>
+          <div class="heading text-3xl font-extrabold text-slate-900">142</div>
+          <div class="text-xs text-slate-400 mt-1">událostí v katastru</div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5 card-shadow">
+          <div class="text-xs text-slate-500 mb-2">Odesláno dopisů</div>
+          <div class="heading text-3xl font-extrabold text-slate-900">98</div>
+          <div class="text-xs text-slate-400 mt-1">ze 142 (filtr aktivní)</div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5 card-shadow">
+          <div class="text-xs text-slate-500 mb-2">Odpovědělo</div>
+          <div class="flex items-baseline gap-2">
+            <span class="heading text-3xl font-extrabold text-amber-600">21</span>
+            <span class="text-xs font-semibold text-emerald-600">21 %</span>
+          </div>
+          <div class="text-xs text-slate-400 mt-1">průmer v oboru 3–5 %</div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5 card-shadow">
+          <div class="text-xs text-slate-500 mb-2">Smlouvy uzavřené</div>
+          <div class="heading text-3xl font-extrabold text-emerald-600">7</div>
+          <div class="text-xs text-slate-400 mt-1">~ 1,4 mil Kč provize</div>
+        </div>
+      </div>
+
+      <div class="grid lg:grid-cols-3 gap-6 mb-6">
+        <!-- Events list -->
+        <div class="lg:col-span-2 bg-white border border-slate-200 rounded-xl card-shadow overflow-hidden">
+          <div class="flex items-center justify-between p-5 border-b border-slate-100">
+            <div>
+              <h2 class="heading font-bold text-lg text-slate-900">Nově detekované události</h2>
+              <p class="text-xs text-slate-500">Z dnešního skenu katastru (142 událostí · filtrováno na 12 relevantních)</p>
+            </div>
+            <button class="text-sm text-amber-600 hover:text-amber-700 font-medium">Všechny →</button>
+          </div>
+          <div class="divide-y divide-slate-100">
+
+            <div class="flex items-center gap-4 p-5 hover:bg-slate-50 transition">
+              <div class="w-11 h-11 rounded-xl bg-slate-900 flex items-center justify-center text-2xl flex-shrink-0">🪦</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="font-semibold text-slate-900">Alena Procházková</span>
+                  <span class="text-[10px] font-bold text-slate-700 bg-amber-100 px-2 py-0.5 rounded uppercase tracking-wider">Dědictví</span>
+                </div>
+                <div class="text-sm text-slate-600">Zdědila byt 3+kk, Praha 6 Dejvice (78 m²) · LV 1823</div>
+                <div class="text-xs text-slate-400 mt-1">Zapsáno do KN před 2 dny · předchozí majitel: Jindřich Procházka (†)</div>
+              </div>
+              <button class="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                Poslat dopis
+              </button>
+            </div>
+
+            <div class="flex items-center gap-4 p-5 hover:bg-slate-50 transition">
+              <div class="w-11 h-11 rounded-xl bg-slate-900 flex items-center justify-center text-2xl flex-shrink-0">🪦</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="font-semibold text-slate-900">Michal Bartoš + 2 další</span>
+                  <span class="text-[10px] font-bold text-slate-700 bg-amber-100 px-2 py-0.5 rounded uppercase tracking-wider">Dědictví · spoluvlastníci</span>
+                  <span class="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded uppercase tracking-wider">🔥 HOT</span>
+                </div>
+                <div class="text-sm text-slate-600">3 sourozenci zdědili RD Beroun · 140 m² + pozemek 800 m²</div>
+                <div class="text-xs text-slate-400 mt-1">Zapsáno před 5 dny · spoluvlastnictví = vysoká šance rychlého prodeje</div>
+              </div>
+              <button class="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                Poslat 3 dopisy
+              </button>
+            </div>
+
+            <div class="flex items-center gap-4 p-5 hover:bg-slate-50 transition">
+              <div class="w-11 h-11 rounded-xl bg-red-600 flex items-center justify-center text-2xl flex-shrink-0">⚖️</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="font-semibold text-slate-900">Pavel Vondráček</span>
+                  <span class="text-[10px] font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded uppercase tracking-wider">Exekuce</span>
+                </div>
+                <div class="text-sm text-slate-600">Byt 2+1 Praha 10 Strašnice · exekuční zástava</div>
+                <div class="text-xs text-slate-400 mt-1">Zapsáno před 1 dnem · možnost rychlého odkupu před dražbou</div>
+              </div>
+              <button class="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
+                Poslat dopis
+              </button>
+            </div>
+
+            <div class="flex items-center gap-4 p-5 hover:bg-slate-50 transition">
+              <div class="w-11 h-11 rounded-xl bg-purple-700 flex items-center justify-center text-2xl flex-shrink-0">📋</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="font-semibold text-slate-900">Radka Fialová</span>
+                  <span class="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded uppercase tracking-wider">Insolvence</span>
+                </div>
+                <div class="text-sm text-slate-600">RD Kladno · oddlužení schváleno, majetek v konkurzní podstatě</div>
+                <div class="text-xs text-slate-400 mt-1">Zapsáno před 3 dny · oslovit správce insolvence</div>
+              </div>
+              <button class="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
+                Poslat dopis
+              </button>
+            </div>
+
+            <div class="flex items-center gap-4 p-5 hover:bg-slate-50 transition">
+              <div class="w-11 h-11 rounded-xl bg-slate-900 flex items-center justify-center text-2xl flex-shrink-0">🪦</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="font-semibold text-slate-900">Věra Horáčková</span>
+                  <span class="text-[10px] font-bold text-slate-700 bg-amber-100 px-2 py-0.5 rounded uppercase tracking-wider">Dědictví</span>
+                </div>
+                <div class="text-sm text-slate-600">Zdědila pozemek 2 400 m² · Říčany</div>
+                <div class="text-xs text-slate-400 mt-1">Zapsáno dnes · Věra má trvalé bydliště v Ostravě — vysoká šance prodeje</div>
+              </div>
+              <button class="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
+                Poslat dopis
+              </button>
+            </div>
+
+            <div class="flex items-center gap-4 p-5 bg-slate-50">
+              <div class="w-11 h-11 rounded-xl bg-emerald-100 flex items-center justify-center text-2xl flex-shrink-0">✓</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="font-semibold text-slate-900">Jana Brožová</span>
+                  <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded uppercase tracking-wider">Odpověděla</span>
+                </div>
+                <div class="text-sm text-slate-600">Dědictví · 2+kk Praha 8 · zavolala zpět den po dopise</div>
+                <div class="text-xs text-emerald-600 mt-1 font-medium">Dopis odeslán 3. 4. → hovor 8. 4. → schůzka 12. 4. ✓</div>
+              </div>
+              <button onclick="showScreen('lead')" class="text-sm text-brand-600 hover:text-brand-700 font-medium">Zobrazit lead →</button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Letter template -->
+        <div class="bg-white border border-slate-200 rounded-xl card-shadow overflow-hidden flex flex-col">
+          <div class="p-5 border-b border-slate-100">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="heading font-bold text-lg text-slate-900">Šablona dopisu</h2>
+                <p class="text-xs text-slate-500">Kategorie: Dědictví · AI-generovaná</p>
+              </div>
+              <button class="text-xs text-amber-600 hover:text-amber-700 font-medium">Upravit</button>
+            </div>
+            <div class="flex items-center gap-2 mt-3">
+              <button class="text-xs font-semibold px-2 py-1 bg-amber-100 text-amber-800 rounded">Dědictví</button>
+              <button class="text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200">Exekuce</button>
+              <button class="text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200">Insolvence</button>
+              <button class="text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200">Převod</button>
+            </div>
+          </div>
+          <!-- Letter preview -->
+          <div class="bg-slate-50 p-4 flex-1">
+            <div class="bg-white p-5 rounded-lg border border-slate-200 text-sm text-slate-800 leading-relaxed font-serif">
+              <div class="text-xs text-slate-500 mb-3">Praha, 14. dubna 2026</div>
+              <div class="mb-4">Vážená paní <span class="bg-amber-100 px-1 rounded">{{jmeno}}</span>,</div>
+              <p class="mb-3">
+                obracím se na Vás v souvislosti s nemovitostí <span class="bg-amber-100 px-1 rounded">{{typ_adresa}}</span>, jejíž vlastnictví na Vás nedávno přešlo.
+              </p>
+              <p class="mb-3">
+                Vím, že v této situaci je to poslední, co byste chtěla řešit, ale pokud v nejbližších měsících zvažujete prodej nebo potřebujete nezávislý odhad tržní ceny, rád Vám bezplatně poradím.
+              </p>
+              <p class="mb-3">
+                V okolí <span class="bg-amber-100 px-1 rounded">{{lokalita}}</span> jsem za poslední rok zprostředkoval <span class="bg-amber-100 px-1 rounded">{{pocet_obchodu}}</span> prodejů. Rád bych Vám pomohl bez jakýchkoli závazků.
+              </p>
+              <div class="mt-4">
+                S úctou,<br>
+                <strong>Jaroslav Šimek</strong><br>
+                <span class="text-xs text-slate-500">Realitní makléř · +420 602 XXX XXX<br>jaroslav@leadpilot.cz</span>
+              </div>
+            </div>
+          </div>
+          <div class="p-4 bg-amber-50 border-t border-amber-200 text-xs text-amber-900">
+            <div class="flex items-center gap-2 mb-1">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 4.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM12 18a6 6 0 01-5.4-3.5h10.8A6 6 0 0112 18z"/></svg>
+              <strong>AI tip:</strong>
+            </div>
+            <p>Tón šablony je empatický — vhodný pro dědická řízení. AI ji personalizuje podle lokality a situace.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monitoring settings + pricing -->
+      <div class="grid lg:grid-cols-2 gap-6">
+        <div class="bg-white border border-slate-200 rounded-xl card-shadow p-6">
+          <h2 class="heading font-bold text-lg text-slate-900 mb-1">Co sledovat</h2>
+          <p class="text-xs text-slate-500 mb-5">Filtry určují, které události se objevují v seznamu a kam se posílá dopis.</p>
+          <div class="space-y-3">
+            <label class="flex items-center justify-between p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xl">🪦</span>
+                  <span class="font-semibold text-slate-900 text-sm">Dědická řízení</span>
+                  <span class="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded uppercase">Top ROI</span>
+                </div>
+                <div class="text-xs text-slate-500 mt-0.5 ml-7">Reply rate 22 % · smluvní 8 %</div>
+              </div>
+              <div class="relative"><input type="checkbox" checked class="sr-only peer"><div class="w-11 h-6 bg-slate-200 rounded-full peer-checked:bg-amber-500 transition"><div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition peer-checked:translate-x-5"></div></div></div>
+            </label>
+
+            <label class="flex items-center justify-between p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xl">⚖️</span>
+                  <span class="font-semibold text-slate-900 text-sm">Exekuce / dražby</span>
+                </div>
+                <div class="text-xs text-slate-500 mt-0.5 ml-7">Reply rate 11 % · specifická komunikace</div>
+              </div>
+              <div class="relative"><input type="checkbox" checked class="sr-only peer"><div class="w-11 h-6 bg-slate-200 rounded-full peer-checked:bg-amber-500 transition"><div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition peer-checked:translate-x-5"></div></div></div>
+            </label>
+
+            <label class="flex items-center justify-between p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xl">📋</span>
+                  <span class="font-semibold text-slate-900 text-sm">Insolvenční řízení</span>
+                </div>
+                <div class="text-xs text-slate-500 mt-0.5 ml-7">Reply rate 6 % · pouze oslovit správce</div>
+              </div>
+              <div class="relative"><input type="checkbox" checked class="sr-only peer"><div class="w-11 h-6 bg-slate-200 rounded-full peer-checked:bg-amber-500 transition"><div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition peer-checked:translate-x-5"></div></div></div>
+            </label>
+
+            <label class="flex items-center justify-between p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xl">💔</span>
+                  <span class="font-semibold text-slate-900 text-sm">Zánik SJM (rozvody)</span>
+                </div>
+                <div class="text-xs text-slate-500 mt-0.5 ml-7">Reply rate 15 % · vyžaduje takt</div>
+              </div>
+              <div class="relative"><input type="checkbox" class="sr-only peer"><div class="w-11 h-6 bg-slate-200 rounded-full peer-checked:bg-amber-500 transition"><div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition peer-checked:translate-x-5"></div></div></div>
+            </label>
+
+            <label class="flex items-center justify-between p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xl">🎁</span>
+                  <span class="font-semibold text-slate-900 text-sm">Darovací smlouvy</span>
+                </div>
+                <div class="text-xs text-slate-500 mt-0.5 ml-7">Reply rate 9 % · nižší akvizice</div>
+              </div>
+              <div class="relative"><input type="checkbox" class="sr-only peer"><div class="w-11 h-6 bg-slate-200 rounded-full peer-checked:bg-amber-500 transition"><div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition peer-checked:translate-x-5"></div></div></div>
+            </label>
+          </div>
+
+          <div class="mt-5 pt-5 border-t border-slate-100">
+            <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">Území sledování</div>
+            <div class="flex flex-wrap gap-2">
+              <span class="text-xs font-medium bg-amber-100 text-amber-800 px-3 py-1.5 rounded-full">Praha</span>
+              <span class="text-xs font-medium bg-amber-100 text-amber-800 px-3 py-1.5 rounded-full">Středočeský kraj</span>
+              <span class="text-xs font-medium bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full">+ přidat</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing + how it works -->
+        <div class="space-y-6">
+          <div class="bg-gradient-to-br from-amber-500 to-amber-700 text-white rounded-xl p-6 card-shadow">
+            <div class="text-xs uppercase tracking-wider text-amber-100 font-bold mb-2">Pricing</div>
+            <div class="space-y-4">
+              <div>
+                <div class="flex items-baseline justify-between mb-1">
+                  <span class="font-semibold">Monitoring katastru</span>
+                  <span class="heading text-2xl font-extrabold">1 990 Kč<span class="text-sm font-normal opacity-80">/měs</span></span>
+                </div>
+                <div class="text-xs text-amber-100">Denní sken Prahy + Středočeského + neomezené filtry</div>
+              </div>
+              <div class="border-t border-white/20 pt-4">
+                <div class="flex items-baseline justify-between mb-1">
+                  <span class="font-semibold">Tisk + odeslání dopisu</span>
+                  <span class="heading text-2xl font-extrabold">39 Kč<span class="text-sm font-normal opacity-80">/ks</span></span>
+                </div>
+                <div class="text-xs text-amber-100">Papír 120g, hlavičkový, obálka s okénkem, Česká pošta obyčejně</div>
+              </div>
+              <div class="border-t border-white/20 pt-4">
+                <div class="flex items-baseline justify-between mb-1">
+                  <span class="font-semibold">Doporučeně (volitelně)</span>
+                  <span class="heading text-2xl font-extrabold">89 Kč<span class="text-sm font-normal opacity-80">/ks</span></span>
+                </div>
+                <div class="text-xs text-amber-100">Pro vysoce cenné nemovitosti · dohledatelné doručení</div>
+              </div>
+            </div>
+            <div class="mt-5 pt-5 border-t border-white/20 text-sm">
+              <div class="font-semibold mb-1">Průměrný měsíc u makléře:</div>
+              <div class="text-xs text-amber-100 leading-relaxed">
+                1 990 Kč (subscription) + ~100 dopisů × 39 Kč = <strong class="text-white">5 890 Kč/měs</strong><br>
+                Očekávaný výstup: ~20 odpovědí → 7 smluv → <strong class="text-white">~1,4 mil Kč provize</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-xl card-shadow p-6">
+            <h3 class="heading font-bold text-lg text-slate-900 mb-4">Jak to funguje</h3>
+            <ol class="space-y-3 text-sm">
+              <li class="flex gap-3">
+                <div class="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">1</div>
+                <div>
+                  <strong class="text-slate-900">Denní sken katastru</strong>
+                  <div class="text-slate-500 text-xs mt-0.5">Každou noc AI prochází otevřená data KN (ČÚZK) + insolvenční rejstřík + exekuční portál.</div>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <div class="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">2</div>
+                <div>
+                  <strong class="text-slate-900">Filtrace a skórování</strong>
+                  <div class="text-slate-500 text-xs mt-0.5">AI vyhodnotí každou událost a přiřadí pravděpodobnost prodeje (0–10).</div>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <div class="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">3</div>
+                <div>
+                  <strong class="text-slate-900">Generování dopisu</strong>
+                  <div class="text-slate-500 text-xs mt-0.5">AI personalizuje dopis podle lokality, typu události a tvého stylu. Ty schvaluješ / odmítáš.</div>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <div class="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">4</div>
+                <div>
+                  <strong class="text-slate-900">Tisk + doručení</strong>
+                  <div class="text-slate-500 text-xs mt-0.5">Integrace s tiskárnou + Českou poštou → dopis je u majitele do 3 pracovních dní.</div>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <div class="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">5</div>
+                <div>
+                  <strong class="text-slate-900">Tracking odpovědí</strong>
+                  <div class="text-slate-500 text-xs mt-0.5">Každý dopis má unikátní QR kód / URL → měříš, kdo ho otevřel a zavolal.</div>
+                </div>
+              </li>
+            </ol>
+          </div>
+
+          <div class="bg-slate-900 text-white rounded-xl p-5 text-sm">
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              <div>
+                <strong class="text-white">Compliance:</strong> sledujeme pouze veřejné zdroje (KN, insolvenční rejstřík, exekuční portál). Dopisy obsahují opt-out odkaz. Právně ošetřené s advokátem specializujícím se na GDPR.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================== -->
+<!-- SCREEN: NASTAVENÍ -->
+<!-- =============================================== -->
+<div id="screen-settings" class="screen hide">
+  <div class="min-h-[calc(100vh-60px)] bg-slate-50 p-6 md:p-10">
+    <div class="max-w-5xl mx-auto">
+      <h1 class="heading text-3xl font-extrabold text-slate-900 mb-1">Nastavení</h1>
+      <p class="text-slate-500 mb-8">Účet, platby, integrace, notifikace.</p>
+
+      <div class="grid md:grid-cols-[240px_1fr] gap-8">
+        <!-- Side nav -->
+        <aside class="md:sticky md:top-20 self-start">
+          <nav class="space-y-1">
+            <a class="block px-3 py-2 rounded-lg bg-brand-50 text-brand-700 font-medium text-sm">Profil</a>
+            <a class="block px-3 py-2 rounded-lg hover:bg-white text-slate-600 text-sm cursor-pointer">Předplatné & fakturace</a>
+            <a class="block px-3 py-2 rounded-lg hover:bg-white text-slate-600 text-sm cursor-pointer">Reklamní účty</a>
+            <a class="block px-3 py-2 rounded-lg hover:bg-white text-slate-600 text-sm cursor-pointer">Notifikace</a>
+            <a class="block px-3 py-2 rounded-lg hover:bg-white text-slate-600 text-sm cursor-pointer">Tým</a>
+            <a class="block px-3 py-2 rounded-lg hover:bg-white text-slate-600 text-sm cursor-pointer">API & integrace</a>
+            <a class="block px-3 py-2 rounded-lg hover:bg-white text-slate-600 text-sm cursor-pointer">Zabezpečení</a>
+          </nav>
+        </aside>
+
+        <!-- Content -->
+        <div class="space-y-6">
+          <!-- Profil -->
+          <div class="bg-white border border-slate-200 rounded-2xl card-shadow p-6">
+            <h2 class="heading font-bold text-xl text-slate-900 mb-5">Profil</h2>
+            <div class="flex items-center gap-5 mb-6">
+              <div class="relative">
+                <div class="w-20 h-20 rounded-full bg-brand-600 text-white text-2xl font-bold flex items-center justify-center">JŠ</div>
+                <button class="absolute bottom-0 right-0 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center hover:bg-slate-50">
+                  <svg class="w-3 h-3 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </button>
+              </div>
+              <div>
+                <div class="heading text-xl font-bold text-slate-900">Jaroslav Šimek</div>
+                <div class="text-sm text-slate-500">Realitní makléř · Praha</div>
+                <div class="text-xs text-slate-400 mt-1">Member od dubna 2026</div>
+              </div>
+            </div>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Jméno</label>
+                <input type="text" value="Jaroslav Šimek" class="mt-1 w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-500">
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">E-mail</label>
+                <input type="email" value="jaroslav@leadpilot.cz" class="mt-1 w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-500">
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Telefon</label>
+                <input type="tel" value="+420 602 XXX XXX" class="mt-1 w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-500">
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Vertikála</label>
+                <select class="mt-1 w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-500">
+                  <option>Realitní makléř</option>
+                  <option>Finanční poradce</option>
+                  <option>Pojišťovací zprostředkovatel</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Plán -->
+          <div class="bg-white border border-slate-200 rounded-2xl card-shadow p-6">
+            <div class="flex items-center justify-between mb-5">
+              <h2 class="heading font-bold text-xl text-slate-900">Předplatné</h2>
+              <button class="text-sm text-brand-600 hover:text-brand-700 font-medium">Změnit plán</button>
+            </div>
+            <div class="grid md:grid-cols-3 gap-4">
+              <div class="p-4 border-2 border-brand-500 bg-brand-50 rounded-xl relative">
+                <div class="absolute -top-2.5 right-4 bg-brand-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">Aktivní</div>
+                <div class="text-xs uppercase tracking-wider text-brand-700 font-semibold mb-2">Pro</div>
+                <div class="heading text-3xl font-extrabold text-slate-900">2 990 Kč<span class="text-sm font-normal text-slate-500">/měs</span></div>
+                <ul class="mt-3 space-y-1 text-xs text-slate-700">
+                  <li>✓ Do 30 leadů/měs</li>
+                  <li>✓ 3 lokality</li>
+                  <li>✓ Všechny kanály</li>
+                  <li>✓ AI kvalifikace</li>
+                </ul>
+              </div>
+              <div class="p-4 border border-slate-200 rounded-xl">
+                <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">Starter</div>
+                <div class="heading text-3xl font-extrabold text-slate-900">1 990<span class="text-sm font-normal text-slate-500"> Kč/měs</span></div>
+                <ul class="mt-3 space-y-1 text-xs text-slate-600">
+                  <li>• Do 15 leadů/měs</li>
+                  <li>• 1 lokalita</li>
+                  <li>• 1 kanál</li>
+                </ul>
+              </div>
+              <div class="p-4 border border-slate-200 rounded-xl">
+                <div class="text-xs uppercase tracking-wider text-purple-600 font-semibold mb-2">Premium</div>
+                <div class="heading text-3xl font-extrabold text-slate-900">4 990<span class="text-sm font-normal text-slate-500"> Kč/měs</span></div>
+                <ul class="mt-3 space-y-1 text-xs text-slate-600">
+                  <li>• Neomezeně leadů</li>
+                  <li>• Neomezené lokality</li>
+                  <li>• Prémium AI + prio support</li>
+                </ul>
+              </div>
+            </div>
+            <div class="mt-5 pt-5 border-t border-slate-100 flex items-center justify-between text-sm">
+              <div>
+                <div class="text-slate-500">Příští fakturace</div>
+                <div class="font-semibold text-slate-900">14. 5. 2026 · 2 990 Kč + DPH</div>
+              </div>
+              <div>
+                <div class="text-slate-500">Karta</div>
+                <div class="font-semibold text-slate-900">•••• 4242 (Visa)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Integrace -->
+          <div class="bg-white border border-slate-200 rounded-2xl card-shadow p-6">
+            <h2 class="heading font-bold text-xl text-slate-900 mb-5">Reklamní účty</h2>
+            <div class="space-y-3">
+              <div class="flex items-center gap-4 p-4 border border-slate-200 rounded-xl">
+                <div class="w-10 h-10 bg-[#1877F2] rounded-lg flex items-center justify-center">
+                  <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold text-slate-900">Meta Business (FB + IG)</div>
+                  <div class="text-xs text-slate-500">act_1234567890 · jaroslav@leadpilot.cz</div>
+                </div>
+                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full">
+                  <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                  Připojeno
+                </span>
+              </div>
+              <div class="flex items-center gap-4 p-4 border border-slate-200 rounded-xl">
+                <div class="w-10 h-10 bg-white border border-slate-200 rounded-lg flex items-center justify-center">
+                  <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold text-slate-900">Google Ads</div>
+                  <div class="text-xs text-slate-500">123-456-7890 · Jaroslav Simek</div>
+                </div>
+                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full">
+                  <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                  Připojeno
+                </span>
+              </div>
+              <div class="flex items-center gap-4 p-4 border border-slate-200 rounded-xl">
+                <div class="w-10 h-10 bg-[#CC0000] rounded-lg flex items-center justify-center text-white font-bold">S</div>
+                <div class="flex-1">
+                  <div class="font-semibold text-slate-900">Sklik (Seznam)</div>
+                  <div class="text-xs text-slate-500">ID: 9876543 · jaroslav@leadpilot.cz</div>
+                </div>
+                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full">
+                  <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                  Připojeno
+                </span>
+              </div>
+              <div class="flex items-center gap-4 p-4 border-2 border-dashed border-slate-200 rounded-xl hover:border-brand-400 cursor-pointer">
+                <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold text-slate-700">Přidat další kanál</div>
+                  <div class="text-xs text-slate-500">TikTok, LinkedIn, Pinterest (brzy)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notifikace -->
+          <div class="bg-white border border-slate-200 rounded-2xl card-shadow p-6">
+            <h2 class="heading font-bold text-xl text-slate-900 mb-5">Notifikace</h2>
+            <div class="space-y-4">
+              <label class="flex items-center justify-between cursor-pointer">
+                <div>
+                  <div class="font-semibold text-slate-900 text-sm">Push notifikace v mobilu</div>
+                  <div class="text-xs text-slate-500">Okamžitá zpráva při novém leadu</div>
+                </div>
+                <div class="relative"><input type="checkbox" checked class="sr-only peer"><div class="w-11 h-6 bg-slate-200 rounded-full peer-checked:bg-brand-600 transition"><div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition peer-checked:translate-x-5"></div></div></div>
+              </label>
+              <label class="flex items-center justify-between cursor-pointer">
+                <div>
+                  <div class="font-semibold text-slate-900 text-sm">SMS fallback</div>
+                  <div class="text-xs text-slate-500">Pokud nezareaguješ na push do 2 minut</div>
+                </div>
+                <div class="relative"><input type="checkbox" checked class="sr-only peer"><div class="w-11 h-6 bg-slate-200 rounded-full peer-checked:bg-brand-600 transition"><div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition peer-checked:translate-x-5"></div></div></div>
+              </label>
+              <label class="flex items-center justify-between cursor-pointer">
+                <div>
+                  <div class="font-semibold text-slate-900 text-sm">E-mailové shrnutí</div>
+                  <div class="text-xs text-slate-500">Každé ráno v 8:00 souhrn předchozího dne</div>
+                </div>
+                <div class="relative"><input type="checkbox" checked class="sr-only peer"><div class="w-11 h-6 bg-slate-200 rounded-full peer-checked:bg-brand-600 transition"><div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition peer-checked:translate-x-5"></div></div></div>
+              </label>
+              <label class="flex items-center justify-between cursor-pointer">
+                <div>
+                  <div class="font-semibold text-slate-900 text-sm">Týdenní report výkonu</div>
+                  <div class="text-xs text-slate-500">Každé pondělí — statistiky a AI insights</div>
+                </div>
+                <div class="relative"><input type="checkbox" class="sr-only peer"><div class="w-11 h-6 bg-slate-200 rounded-full peer-checked:bg-brand-600 transition"><div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition peer-checked:translate-x-5"></div></div></div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================== -->
+<!-- SCREEN: MOBILE + NOTIFIKACE -->
+<!-- =============================================== -->
+<div id="screen-mobile" class="screen hide">
+  <div class="min-h-[calc(100vh-60px)] bg-gradient-to-br from-slate-900 via-brand-950 to-slate-900 p-6 md:p-12 flex items-center justify-center">
+    <div class="max-w-[1200px] mx-auto grid md:grid-cols-2 gap-12 items-center">
+
+      <!-- Left: Copy -->
+      <div class="text-white">
+        <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur border border-white/20 rounded-full text-xs font-medium mb-6">
+          <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full pulse-dot"></span>
+          Killer feature
+        </div>
+        <h2 class="heading text-5xl font-extrabold leading-[1.05] mb-6">
+          Nový lead.<br>
+          <span class="text-brand-300">Do 5 sekund.</span><br>
+          V tvé kapse.
+        </h2>
+        <p class="text-lg text-slate-300 mb-8 leading-relaxed">
+          Majitel vyplní formulář "kolik stojí můj byt?" a tvůj mobil zazvoní během 5 sekund. Jedno klepnutí a voláš. Mezitím odejde automatická SMS: <em>„Děkuji za zájem o odhad, ozvu se do 15 minut s předběžným číslem."</em>
+        </p>
+
+        <div class="space-y-4 mb-8">
+          <div class="flex items-start gap-3">
+            <div class="w-6 h-6 bg-brand-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <div class="font-semibold">Push + SMS + Email fallback</div>
+              <div class="text-sm text-slate-400">Ať jsi v lese nebo v Alpách, lead se k tobě dostane.</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-6 h-6 bg-brand-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <div class="font-semibold">AI kvalifikace hned v notifikaci</div>
+              <div class="text-sm text-slate-400">Vidíš skóre, budget, timeline. Víš, jestli volat hned nebo večer.</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-6 h-6 bg-brand-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <div class="font-semibold">3× vyšší konverze</div>
+              <div class="text-sm text-slate-400">Proti makléři, co odpoví za 24 hodin (průměr odvětví).</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur border border-white/10 rounded-xl p-5">
+          <div class="text-xs uppercase tracking-wider text-slate-400 mb-2">Research</div>
+          <p class="text-sm text-slate-300">
+            „80 % online leadů vychladne do 1 hodiny. Makléři, co volají do 5 minut, uzavírají 3× víc obchodů."
+          </p>
+          <div class="text-xs text-slate-500 mt-2">— Harvard Business Review / MIT Sloan</div>
+        </div>
+      </div>
+
+      <!-- Right: Phone mockup -->
+      <div class="flex justify-center">
+        <div class="phone-frame">
+          <div class="h-full overflow-hidden relative bg-gradient-to-br from-slate-800 to-brand-950">
+            <!-- Status bar -->
+            <div class="flex items-center justify-between px-8 pt-12 pb-2 text-white text-xs font-semibold">
+              <span>9:41</span>
+              <div class="flex items-center gap-1">
+                <span>●●●●</span>
+                <span>100%</span>
+              </div>
+            </div>
+
+            <!-- Wallpaper icons blurred -->
+            <div class="pt-16 px-6 grid grid-cols-4 gap-6 opacity-40">
+              <div class="w-14 h-14 bg-white/10 rounded-2xl"></div>
+              <div class="w-14 h-14 bg-white/10 rounded-2xl"></div>
+              <div class="w-14 h-14 bg-white/10 rounded-2xl"></div>
+              <div class="w-14 h-14 bg-white/10 rounded-2xl"></div>
+              <div class="w-14 h-14 bg-white/10 rounded-2xl"></div>
+              <div class="w-14 h-14 bg-white/10 rounded-2xl"></div>
+              <div class="w-14 h-14 bg-white/10 rounded-2xl"></div>
+              <div class="w-14 h-14 bg-white/10 rounded-2xl"></div>
+            </div>
+
+            <!-- Notification -->
+            <div class="absolute top-24 left-4 right-4 bg-slate-900/95 backdrop-blur-xl rounded-2xl p-4 border border-white/10 slide-up" style="box-shadow: 0 20px 60px -10px rgba(0,0,0,0.5);">
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl gradient-brand flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <span class="font-semibold text-white text-sm">LeadPilot</span>
+                    <span class="text-xs text-slate-400">teď</span>
+                  </div>
+                  <div class="mt-1">
+                    <span class="inline-block text-[10px] font-bold text-red-400 uppercase tracking-wider mb-1">🔥 Hot lead · 9/10</span>
+                    <div class="text-sm font-semibold text-white leading-snug">Marie Nováková</div>
+                    <div class="text-xs text-slate-300 mt-0.5">Prodává 3+kk Praha 5 · 87 m² · odhad 8 mil</div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex gap-2 mt-3 pt-3 border-t border-white/10">
+                <button class="flex-1 bg-emerald-500 text-white text-sm font-semibold py-2 rounded-lg">📞 Zavolat</button>
+                <button class="flex-1 bg-white/10 text-white text-sm font-semibold py-2 rounded-lg">Za hodinu</button>
+              </div>
+            </div>
+
+            <!-- Another, older notification below -->
+            <div class="absolute top-[260px] left-4 right-4 bg-slate-900/80 backdrop-blur rounded-2xl p-3 border border-white/5 opacity-80">
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg gradient-brand flex-shrink-0"></div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <span class="font-semibold text-white text-xs">LeadPilot</span>
+                    <span class="text-[10px] text-slate-500">před 2 h</span>
+                  </div>
+                  <div class="text-xs text-slate-300 mt-0.5">Petr Dvořák · Zvažuje prodej pozemku · Beroun · 3 mil</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================== -->
+<!-- SCRIPT: screen switching + interactions -->
+<!-- =============================================== -->
+<script>
+  let currentStep = 1;
+
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.add('hide'));
+    const screen = document.getElementById('screen-' + name);
+    if (screen) {
+      screen.classList.remove('hide');
+      screen.classList.remove('fade-in');
+      void screen.offsetWidth;
+      screen.classList.add('fade-in');
+    }
+    document.querySelectorAll('.nav-btn').forEach(b => {
+      b.classList.remove('bg-brand-600');
+      b.classList.remove('text-white');
+    });
+    const active = document.querySelector(`[data-nav="${name}"]`);
+    if (active) { active.classList.add('bg-brand-600', 'text-white'); }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function selectVertical(btn, vertical) {
+    document.querySelectorAll('.vertical-btn').forEach(b => {
+      b.classList.remove('border-brand-500', 'bg-brand-50', 'shadow-md');
+      b.classList.add('border-slate-200');
+    });
+    btn.classList.remove('border-slate-200');
+    btn.classList.add('border-brand-500', 'bg-brand-50', 'shadow-md');
+    const continueBtn = document.getElementById('btn-step-1');
+    continueBtn.disabled = false;
+    continueBtn.classList.remove('bg-slate-300', 'cursor-not-allowed');
+    continueBtn.classList.add('bg-brand-600', 'hover:bg-brand-700', 'cursor-pointer');
+  }
+
+  function nextStep() {
+    if (currentStep < 5) {
+      document.getElementById('onb-step-' + currentStep).classList.add('hide');
+      currentStep++;
+      const next = document.getElementById('onb-step-' + currentStep);
+      next.classList.remove('hide');
+      next.classList.remove('slide-up');
+      void next.offsetWidth;
+      next.classList.add('slide-up');
+      updateProgress();
+    }
+  }
+
+  function prevStep() {
+    if (currentStep > 1) {
+      document.getElementById('onb-step-' + currentStep).classList.add('hide');
+      currentStep--;
+      document.getElementById('onb-step-' + currentStep).classList.remove('hide');
+      updateProgress();
+    }
+  }
+
+  function updateProgress() {
+    const pct = currentStep * 20;
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('step-label').textContent = `Krok ${currentStep} z 5`;
+    const timeMap = { 1: '~ 4 min zbývají', 2: '~ 3 min zbývají', 3: '~ 2 min zbývají', 4: '~ 1 min zbývá', 5: 'poslední krok' };
+    document.getElementById('step-time').textContent = timeMap[currentStep];
+  }
+
+  function connectChannel(btn) {
+    const state = btn.querySelector('.channel-state');
+    btn.classList.remove('border-slate-200');
+    btn.classList.add('border-emerald-500', 'bg-emerald-50');
+    state.innerHTML = '<span class="text-emerald-600 flex items-center gap-1"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>Připojeno</span>';
+  }
+
+  function finishOnboarding() {
+    alert('Onboarding dokončen! 🎉\n\nAI teď vytvoří první kampaně (~10 min). Pokračujeme na dashboard.');
+    currentStep = 1;
+    updateProgress();
+    document.querySelectorAll('.onb-step').forEach(s => s.classList.add('hide'));
+    document.getElementById('onb-step-1').classList.remove('hide');
+    showScreen('dashboard');
+  }
+
+  function advanceStage(btn) {
+    const allBtns = btn.parentElement.querySelectorAll('.stage-btn');
+    let reached = false;
+    allBtns.forEach(b => {
+      const circle = b.querySelector('div');
+      const label = b.querySelector('span');
+      b.classList.remove('bg-brand-50', 'border', 'border-brand-200');
+      if (!reached) {
+        circle.classList.remove('border-2', 'border-slate-300');
+        circle.classList.add('bg-brand-600', 'flex', 'items-center', 'justify-center');
+        circle.innerHTML = '<svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+        label.classList.remove('text-slate-600');
+        label.classList.add('text-slate-900', 'font-semibold');
+        if (b === btn) {
+          b.classList.add('bg-brand-50', 'border', 'border-brand-200');
+          reached = true;
+        }
+      } else {
+        circle.classList.add('border-2', 'border-slate-300');
+        circle.classList.remove('bg-brand-600', 'flex', 'items-center', 'justify-center');
+        circle.innerHTML = '';
+        label.classList.add('text-slate-600');
+        label.classList.remove('text-slate-900', 'font-semibold');
+      }
+    });
+  }
+
+  // Init active nav
+  document.querySelector('[data-nav="welcome"]').classList.add('bg-brand-600', 'text-white');
+</script>
+
+</body>
+</html>
