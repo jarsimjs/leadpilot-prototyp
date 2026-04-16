@@ -2237,6 +2237,333 @@
         </div>
       </div>
 
+      <!-- Mapa Prahy -->
+      <div class="bg-white border border-slate-200 rounded-xl card-shadow p-6 mb-6">
+        <div class="flex items-start justify-between mb-5">
+          <div>
+            <h2 class="heading font-bold text-lg text-slate-900">Praha · mapa detekovaných událostí</h2>
+            <p class="text-xs text-slate-500">Tento měsíc · 87 událostí v hlavním městě</p>
+          </div>
+          <div class="flex items-center bg-slate-100 rounded-lg p-1">
+            <button class="px-3 py-1.5 text-xs bg-amber-500 text-white rounded font-semibold">Praha</button>
+            <button class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 rounded">Středočeský</button>
+            <button class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 rounded">Celá ČR</button>
+          </div>
+        </div>
+
+        <div class="grid lg:grid-cols-[1.4fr_1fr] gap-6">
+          <!-- SVG mapa -->
+          <div class="relative rounded-xl overflow-hidden bg-gradient-to-br from-slate-50 to-blue-50 border border-slate-200" style="aspect-ratio: 4/3;">
+            <svg viewBox="0 0 400 300" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+              <!-- Grid pattern -->
+              <defs>
+                <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="0.5"/>
+                </pattern>
+                <radialGradient id="pinGlow">
+                  <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.4"/>
+                  <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <rect width="400" height="300" fill="url(#grid)"/>
+
+              <!-- Vltava river -->
+              <path d="M 180 0 Q 195 50 170 90 Q 150 130 175 170 Q 200 210 185 260 Q 180 290 195 300"
+                    stroke="#60a5fa" stroke-width="14" fill="none" stroke-linecap="round" opacity="0.55"/>
+              <path d="M 180 0 Q 195 50 170 90 Q 150 130 175 170 Q 200 210 185 260 Q 180 290 195 300"
+                    stroke="#bfdbfe" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+              <!-- District polygons (stylized) -->
+              <g opacity="0.7">
+                <polygon points="100,80 150,60 170,110 140,140 90,130" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+                <polygon points="180,140 220,120 250,160 220,195 185,180" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+                <polygon points="250,100 300,85 325,130 295,155 255,145" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+                <polygon points="60,170 110,155 130,200 95,225 55,215" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+                <polygon points="220,210 265,195 290,235 260,265 225,250" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+                <polygon points="140,220 190,210 210,250 175,275 140,265" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+              </g>
+
+              <!-- District labels -->
+              <g font-family="Inter" font-size="9" fill="#475569" font-weight="600">
+                <text x="125" y="105">P6</text>
+                <text x="210" y="160">P1</text>
+                <text x="290" y="120">P3</text>
+                <text x="85" y="195">P5</text>
+                <text x="260" y="230">P10</text>
+                <text x="170" y="245">P4</text>
+                <text x="320" y="60" fill="#94a3b8" font-size="8">P9</text>
+                <text x="40" y="60" fill="#94a3b8" font-size="8">P7</text>
+                <text x="340" y="200" fill="#94a3b8" font-size="8">P14</text>
+                <text x="30" y="250" fill="#94a3b8" font-size="8">P13</text>
+              </g>
+
+              <!-- Pins — different event types -->
+              <!-- Dědictví (🪦) -->
+              <g>
+                <circle cx="135" cy="100" r="18" fill="url(#pinGlow)"/>
+                <circle cx="135" cy="100" r="9" fill="#0f172a" stroke="white" stroke-width="2.5"/>
+                <text x="135" y="104" text-anchor="middle" font-size="9" fill="white">🪦</text>
+              </g>
+              <g>
+                <circle cx="220" cy="150" r="16" fill="url(#pinGlow)"/>
+                <circle cx="220" cy="150" r="9" fill="#0f172a" stroke="white" stroke-width="2.5"/>
+                <text x="220" y="154" text-anchor="middle" font-size="9" fill="white">🪦</text>
+              </g>
+              <g>
+                <circle cx="155" cy="240" r="16" fill="url(#pinGlow)"/>
+                <circle cx="155" cy="240" r="9" fill="#0f172a" stroke="white" stroke-width="2.5"/>
+                <text x="155" y="244" text-anchor="middle" font-size="9" fill="white">🪦</text>
+              </g>
+              <g>
+                <circle cx="80" cy="190" r="14" fill="url(#pinGlow)"/>
+                <circle cx="80" cy="190" r="8" fill="#0f172a" stroke="white" stroke-width="2.5"/>
+                <text x="80" y="194" text-anchor="middle" font-size="8" fill="white">🪦</text>
+              </g>
+
+              <!-- Exekuce (⚖️) -->
+              <g>
+                <circle cx="265" cy="225" r="14" fill="url(#pinGlow)"/>
+                <circle cx="265" cy="225" r="8" fill="#dc2626" stroke="white" stroke-width="2.5"/>
+                <text x="265" y="229" text-anchor="middle" font-size="8" fill="white">⚖</text>
+              </g>
+              <g>
+                <circle cx="295" cy="125" r="13" fill="url(#pinGlow)"/>
+                <circle cx="295" cy="125" r="7" fill="#dc2626" stroke="white" stroke-width="2.5"/>
+                <text x="295" y="128" text-anchor="middle" font-size="7" fill="white">⚖</text>
+              </g>
+
+              <!-- Insolvence (📋) -->
+              <g>
+                <circle cx="100" cy="120" r="13" fill="url(#pinGlow)"/>
+                <circle cx="100" cy="120" r="7" fill="#7c3aed" stroke="white" stroke-width="2.5"/>
+                <text x="100" y="124" text-anchor="middle" font-size="7" fill="white">📋</text>
+              </g>
+
+              <!-- SJM rozvody (💔) -->
+              <g>
+                <circle cx="240" cy="185" r="12" fill="url(#pinGlow)"/>
+                <circle cx="240" cy="185" r="7" fill="#ec4899" stroke="white" stroke-width="2.5"/>
+                <text x="240" y="188" text-anchor="middle" font-size="7" fill="white">💔</text>
+              </g>
+
+              <!-- Several smaller dots for volume indication -->
+              <circle cx="130" cy="90" r="3" fill="#0f172a" opacity="0.5"/>
+              <circle cx="145" cy="115" r="3" fill="#0f172a" opacity="0.5"/>
+              <circle cx="280" cy="100" r="3" fill="#0f172a" opacity="0.5"/>
+              <circle cx="205" cy="170" r="3" fill="#0f172a" opacity="0.5"/>
+              <circle cx="200" cy="145" r="3" fill="#0f172a" opacity="0.5"/>
+              <circle cx="175" cy="255" r="3" fill="#0f172a" opacity="0.5"/>
+              <circle cx="275" cy="240" r="3" fill="#dc2626" opacity="0.5"/>
+
+              <!-- Compass -->
+              <g transform="translate(360, 40)">
+                <circle r="16" fill="white" stroke="#cbd5e1"/>
+                <path d="M 0 -10 L 3 0 L 0 10 L -3 0 Z" fill="#475569"/>
+                <text y="-18" text-anchor="middle" font-size="8" fill="#64748b" font-family="Inter" font-weight="600">S</text>
+              </g>
+
+              <!-- Title on map -->
+              <g>
+                <rect x="12" y="12" width="92" height="28" rx="6" fill="white" opacity="0.95"/>
+                <text x="20" y="26" font-family="Inter" font-size="9" fill="#94a3b8" font-weight="600">HLAVNÍ MĚSTO</text>
+                <text x="20" y="37" font-family="Manrope" font-size="13" fill="#0f172a" font-weight="800">Praha</text>
+              </g>
+            </svg>
+
+            <!-- Pulse on most active area -->
+            <div class="absolute top-[32%] left-[32%] w-4 h-4 rounded-full bg-amber-500 opacity-30 pulse-dot"></div>
+          </div>
+
+          <!-- Legenda + Top districts -->
+          <div class="space-y-4">
+            <div>
+              <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">Legenda</div>
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="w-5 h-5 bg-slate-900 rounded-full flex items-center justify-center text-[9px]">🪦</span>
+                  <span class="text-slate-700">Dědictví · 64</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-5 h-5 bg-red-600 rounded-full flex items-center justify-center text-[9px]">⚖</span>
+                  <span class="text-slate-700">Exekuce · 12</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center text-[8px]">📋</span>
+                  <span class="text-slate-700">Insolvence · 6</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-5 h-5 bg-pink-500 rounded-full flex items-center justify-center text-[8px]">💔</span>
+                  <span class="text-slate-700">Rozvody · 5</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">Top městské části</div>
+              <div class="space-y-2">
+                <div class="flex items-center justify-between p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div>
+                    <div class="font-bold text-slate-900 text-sm">Praha 6</div>
+                    <div class="text-xs text-slate-500">Dejvice, Bubeneč, Břevnov</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="heading font-bold text-amber-700">18</div>
+                    <div class="text-[10px] text-slate-500">událostí</div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                  <div>
+                    <div class="font-bold text-slate-900 text-sm">Praha 5</div>
+                    <div class="text-xs text-slate-500">Smíchov, Košíře, Stodůlky</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="heading font-bold text-slate-900">15</div>
+                    <div class="text-[10px] text-slate-500">událostí</div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                  <div>
+                    <div class="font-bold text-slate-900 text-sm">Praha 10</div>
+                    <div class="text-xs text-slate-500">Vršovice, Strašnice, Záběhlice</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="heading font-bold text-slate-900">12</div>
+                    <div class="text-[10px] text-slate-500">událostí</div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                  <div>
+                    <div class="font-bold text-slate-900 text-sm">Praha 4</div>
+                    <div class="text-xs text-slate-500">Nusle, Podolí, Krč</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="heading font-bold text-slate-900">10</div>
+                    <div class="text-[10px] text-slate-500">událostí</div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                  <div>
+                    <div class="font-bold text-slate-900 text-sm">Praha 8</div>
+                    <div class="text-xs text-slate-500">Karlín, Libeň, Kobylisy</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="heading font-bold text-slate-900">9</div>
+                    <div class="text-[10px] text-slate-500">událostí</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- District grid -->
+        <div class="mt-6 pt-6 border-t border-slate-100">
+          <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">Heatmapa všech MČ — klikni pro detail</div>
+          <div class="grid grid-cols-6 md:grid-cols-11 gap-1.5">
+            <button class="aspect-square rounded-md bg-amber-200 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-600 font-medium">P1</div>
+              <div class="text-xs font-bold text-slate-900">6</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-100 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-600 font-medium">P2</div>
+              <div class="text-xs font-bold text-slate-900">4</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-300 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-600 font-medium">P3</div>
+              <div class="text-xs font-bold text-slate-900">8</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-400 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-700 font-medium">P4</div>
+              <div class="text-xs font-bold text-slate-900">10</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-400 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-700 font-medium">P5</div>
+              <div class="text-xs font-bold text-slate-900">15</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-500 hover:ring-2 hover:ring-amber-500 ring-2 ring-amber-600 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-white font-medium">P6</div>
+              <div class="text-xs font-bold text-white">18</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-200 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-600 font-medium">P7</div>
+              <div class="text-xs font-bold text-slate-900">5</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-300 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-600 font-medium">P8</div>
+              <div class="text-xs font-bold text-slate-900">9</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-200 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-600 font-medium">P9</div>
+              <div class="text-xs font-bold text-slate-900">7</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-400 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-700 font-medium">P10</div>
+              <div class="text-xs font-bold text-slate-900">12</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-100 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-600 font-medium">P11</div>
+              <div class="text-xs font-bold text-slate-900">3</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-100 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-600 font-medium">P12</div>
+              <div class="text-xs font-bold text-slate-900">4</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-100 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-600 font-medium">P13</div>
+              <div class="text-xs font-bold text-slate-900">3</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-200 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-600 font-medium">P14</div>
+              <div class="text-xs font-bold text-slate-900">5</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-50 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-500 font-medium">P15</div>
+              <div class="text-xs font-bold text-slate-500">2</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-50 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-500 font-medium">P16</div>
+              <div class="text-xs font-bold text-slate-500">1</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-50 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-500 font-medium">P17</div>
+              <div class="text-xs font-bold text-slate-500">2</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-50 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-500 font-medium">P18</div>
+              <div class="text-xs font-bold text-slate-500">1</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-50 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-500 font-medium">P19</div>
+              <div class="text-xs font-bold text-slate-500">0</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-50 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-500 font-medium">P20</div>
+              <div class="text-xs font-bold text-slate-500">1</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-50 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-500 font-medium">P21</div>
+              <div class="text-xs font-bold text-slate-500">0</div>
+            </button>
+            <button class="aspect-square rounded-md bg-amber-50 hover:ring-2 hover:ring-amber-500 flex flex-col items-center justify-center transition">
+              <div class="text-[10px] text-slate-500 font-medium">P22</div>
+              <div class="text-xs font-bold text-slate-500">0</div>
+            </button>
+          </div>
+          <div class="flex items-center justify-center gap-2 mt-3 text-xs text-slate-500">
+            <span>méně událostí</span>
+            <div class="flex gap-0.5">
+              <span class="w-3 h-3 bg-amber-50 rounded-sm"></span>
+              <span class="w-3 h-3 bg-amber-100 rounded-sm"></span>
+              <span class="w-3 h-3 bg-amber-200 rounded-sm"></span>
+              <span class="w-3 h-3 bg-amber-300 rounded-sm"></span>
+              <span class="w-3 h-3 bg-amber-400 rounded-sm"></span>
+              <span class="w-3 h-3 bg-amber-500 rounded-sm"></span>
+            </div>
+            <span>více událostí</span>
+          </div>
+        </div>
+      </div>
+
       <div class="grid lg:grid-cols-3 gap-6 mb-6">
         <!-- Events list -->
         <div class="lg:col-span-2 bg-white border border-slate-200 rounded-xl card-shadow overflow-hidden">
